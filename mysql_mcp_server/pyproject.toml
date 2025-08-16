@@ -1,0 +1,15 @@
+[project]
+name = "mysql-server-mcp"
+version = "1.0.0"
+description = "A Model Context Protocol (MCP) server that enables secure interaction with MySQL/MariaDB/TiDB/AWS OceanBase/RDS/Aurora MySQL DataBases."
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp",
+    "aiomysql",
+    "mcp[cli]>=1.12.4",
+    "loguru"
+]
+
+[[project.authors]]
+name = "Frank Jin"
+email = "j00131120@163.com"
