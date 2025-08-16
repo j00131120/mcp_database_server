@@ -48,7 +48,7 @@ Repository = "https://github.com/j00131120/mcp_database_server.git"
 "Changelog" = "https://github.com/j00131120/mcp_database_server/blob/main/mysql_mcp_server/README.md"
 
 [project.scripts]
-mysql-mcp-server = "src.server:main"
+mysql-mcp-server3 = "src.server:main"
 
 [project.entry-points."mcp.servers"]
 mysql = "src.server:mcp"
