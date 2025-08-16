@@ -25,8 +25,19 @@ git clone <repository-url>
 cd mysql_mcp_server
 ```
 
-### 2. Install dependencies
+### 2. Install from PyPI (Recommended)
 ```bash
+pip install mysql-server-mcp
+```
+
+### 3. Install from source
+```bash
+# Clone and install in development mode
+git clone <repository-url>
+cd mysql_mcp_server
+pip install -e .
+
+# Or install dependencies and run directly
 pip install -r requirements.txt
 ```
 
@@ -65,6 +76,9 @@ export config_file="/path/to/custom/dbconfig.json"
 
 ### Start the MCP Server
 ```bash
+# Using the installed package
+mysql-mcp-server
+
 # Using fastmcp CLI
 fastmcp run src/server.py
 
@@ -289,12 +303,33 @@ Set log level to DEBUG in configuration:
 
 ### Development Setup
 ```bash
-# Install development dependencies
-pip install -r requirements.txt
+# Install in development mode with all dependencies
+pip install -e ".[dev,test,docs]"
 
 # Run with debug logging
 export LOG_LEVEL=debug
 python src/server.py
+```
+
+### Code Quality Tools
+```bash
+# Format code
+black src/
+isort src/
+
+# Lint code
+flake8 src/
+mypy src/
+
+# Run tests
+pytest
+
+# Run tests with coverage
+pytest --cov=src --cov-report=html
+
+# Pre-commit hooks
+pre-commit install
+pre-commit run --all-files
 ```
 
 ## 📄 License
@@ -325,3 +360,38 @@ For support and questions:
 - Multi-database compatibility
 - Async connection pooling
 - Security features implementation
+
+## 📦 Building and Distribution
+
+### Build the Package
+```bash
+# Clean and build
+python build.py build
+
+# Build and check
+python build.py check
+
+# Build and test installation
+python build.py test
+
+# Complete build process
+python build.py all
+```
+
+### Publish to PyPI
+```bash
+# Build, test, and publish
+python build.py publish
+
+# Or manually
+python -m build
+python -m twine check dist/*
+python -m twine upload dist/*
+```
+
+### Package Information
+- **Package Name**: `mysql-server-mcp`
+- **Entry Point**: `mysql-mcp-server`
+- **MCP Server Entry Point**: `mysql`
+- **Python Version**: >= 3.12
+- **License**: MIT
