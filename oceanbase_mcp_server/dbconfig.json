@@ -6,7 +6,7 @@
     "dbList": [
         {   "dbInstanceId": "oceanbase_1",
             "dbHost": "localhost",
-            "dbPort": 3306,
+            "dbPort": 2281,
             "dbDatabase": "oceanbase_db",
             "dbUsername": "root",
             "dbPassword": "123456",
