@@ -127,7 +127,7 @@ cd mcp_database_server/redis_mcp_server
         "run",
         "src/server.py"
       ],
-      "cwd": "/Volumes/store/redis_mcp_server",
+      "cwd": "/Volumes/store/redis_mcp_server", //project absolute path
       "env": {
         "config_file": "/Volumes/store/dbconfig.json"
       },

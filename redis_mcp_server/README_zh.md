@@ -145,7 +145,7 @@ cd mcp_database_server/redis_mcp_server
         "run",
         "src/server.py"
       ],
-      "cwd": "/Volumes/store/redis_mcp_server",
+      "cwd": "/Volumes/store/redis_mcp_server", //项目绝对路径
       "env": {
         "config_file": "/Volumes/store/dbconfig.json"
       },

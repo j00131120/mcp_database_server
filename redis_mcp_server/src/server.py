@@ -306,7 +306,7 @@ def main():
     """Main function: Start MCP server"""
     logger.info(f"Database configuration file path:{db_config_path}")
     logger.info(f"Current project path:{project_path}")
-    logger.info("RedisDataSource MCP Client server is ready to accept connections")
+    logger.info("Redis DataSource MCP Client server is ready to accept connections")
 
     active_db, _ = load_activate_redis_config()
     logger.info(f"Current database instance configuration: {active_db}")

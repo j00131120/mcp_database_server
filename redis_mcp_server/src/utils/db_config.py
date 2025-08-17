@@ -63,7 +63,7 @@ class DatabaseConfigLoader:
             self.config_json_file = db_config_path
             self._config: Optional[DatabaseConfig] = None
             self._initialized = True
-            logger.info(f"Database configuration loader initialized, configuration file: {self.config_json_file}")
+            logger.debug(f"Database configuration loader initialized, configuration file: {self.config_json_file}")
 
     def load_config(self) -> DatabaseConfig:
         """
@@ -85,9 +85,9 @@ class DatabaseConfigLoader:
         try:
             with open(self.config_json_file, 'r', encoding='utf-8') as f:
                 config_data = json.load(f)
-            logger.info(f"Successfully read database configuration file: {self.config_json_file}")
+            logger.debug(f"Successfully read database configuration file: {self.config_json_file}")
         except json.JSONDecodeError as e:
-            error_msg = f"Database configuration file JSON format error: {e}")
+            error_msg = f"Database configuration file JSON format error: {e}"
             logger.error(error_msg)
             raise json.JSONDecodeError(error_msg, e.doc, e.pos)
 
@@ -124,7 +124,7 @@ class DatabaseConfigLoader:
                 redis_decode_responses=redis_data.get('redisDecodeResponses', True)
             )
             redis_instances.append(redis_instance)
-            logger.info(
+            logger.debug(
                 f"Parsed Redis instance: {redis_instance.redis_instance_id} ({redis_instance.redis_host}:{redis_instance.redis_port})")
 
         # Create configuration object
@@ -139,7 +139,7 @@ class DatabaseConfigLoader:
             redis_instances_list=redis_instances
         )
 
-        logger.info(f"Database configuration loading completed, {len(redis_instances)} Redis instances in total")
+        logger.debug(f"Database configuration loading completed, {len(redis_instances)} Redis instances in total")
         return self._config
 
     def get_config(self) -> DatabaseConfig:
