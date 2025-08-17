@@ -49,6 +49,8 @@ class DatabasePool:
                 autocommit=True  # Keep consistent with synchronous version
             )
             logger.info(f"Database connection pool initialized successfully, pool minsize: {pool_size}, maxsize: {max_size}, pool timeout:{pool_timeout}s")
+            logger.info(
+                f"Database connection pool Config: {db_instance}")
         except Exception as e:
             logger.error(f"Database connection pool initialization failed: {str(e)}")
             raise
