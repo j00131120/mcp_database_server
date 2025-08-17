@@ -106,7 +106,7 @@ cd mcp_database_server/oceanbase_mcp_server
         "run",
         "src/server.py"
       ],
-      "cwd": "/Volumes/store/oceanbase_mcp_server",
+      "cwd": "/Volumes/store/oceanbase_mcp_server",  //project absolute path
       "env": {
         "config_file": "/Volumes/store/dbconfig.json"
       },
