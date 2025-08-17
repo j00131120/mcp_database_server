@@ -85,7 +85,7 @@ pip install mysql-mcp-server3
             "dbActive": false
         }
     ],
-    "logPath": "/Volumes/store/mysql_mcp_server",
+    "logPath": "/path/to/logs",
     "logLevel": "info"
 }
 # dbType
@@ -93,7 +93,7 @@ OceanBase 实例属于 MySQL/MariaDB/TiDB OceanBase/RDS/Aurora MySQL 数据库�
 # dbActive
 只有在 dbList 配置列表中将 dbActive 设置为 true 的数据库实例才可用。
 # logPath
-MCP 服务器日志存储在 /Volumes/store/oceanbase_mcp_server/logs/mcp_server.log。
+MCP 服务器日志存储在 /path/to/logs/mcp_server.log。
 # logLevel
 支持的日志级别：TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
 ```

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "postgresql-mcp-server3"
 version = "1.0.0"
-description = "A Model Context Protocol (MCP) server that enables secure interaction with PostgreSQL databases."
+description = "A Model Context Protocol (MCP) server that enables secure interaction with PostgreSQL、RaseSQL databases."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"

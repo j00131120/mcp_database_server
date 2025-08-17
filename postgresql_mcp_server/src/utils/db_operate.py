@@ -3,67 +3,67 @@ from src.utils.logger_util import logger
 import asyncpg
 
 async def get_pooled_connection():
-    """从连接池获取数据库连接"""
+    """Get database connection from connection pool"""
     try:
         pool = await get_db_pool()
         conn = await pool.get_connection()
         return conn
     except Exception as e:
-        logger.error(f"从PostgreSQL连接池获取连接失败: {e}")
+        logger.error(f"Failed to get connection from PostgreSQL connection pool: {e}")
         raise
 async def execute_sql(sql, params=None):
-    """执行SQL语句（异步版本，使用连接池）"""
+    """Execute SQL statement (asynchronous version, using connection pool)"""
     conn = None
-    logger.debug(f"准备执行异步SQL: {sql}")
+    logger.debug(f"Preparing to execute async SQL: {sql}")
     try:
-        logger.debug("正在获取PostgreSQL连接池连接...")
+        logger.debug("Getting PostgreSQL connection pool connection...")
         conn = await get_pooled_connection()
 
-        # 执行SQL
-        logger.debug("正在执行异步SQL查询...")
+        # Execute SQL
+        logger.debug("Executing async SQL query...")
 
-        # 处理不同类型的SQL语句
+        # Handle different types of SQL statements
         sql_lower = sql.strip().lower()
         if sql_lower.startswith(("select", "show", "describe", "desc")):
-            # 对于查询语句，返回结果集
+            # For query statements, return result set
             if params:
                 result = await conn.fetch(sql, *params)
             else:
                 result = await conn.fetch(sql)
-            # 将 asyncpg.Record 转换为字典列表以保持兼容性
+            # Convert asyncpg.Record to dict list for compatibility
             result = [dict(row) for row in result]
-            logger.debug(f"异步查询返回 {len(result)} 行数据")
+            logger.debug(f"Async query returned {len(result)} rows of data")
         elif sql_lower.startswith(("insert", "update", "delete")):
-            # 对于修改语句，返回影响的行数
+            # For modification statements, return affected rows count
             if params:
                 result = await conn.execute(sql, *params)
             else:
                 result = await conn.execute(sql)
-            # 从返回的状态字符串中提取行数（如 "UPDATE 5"）
+            # Extract row count from returned status string (e.g. "UPDATE 5")
             if isinstance(result, str) and ' ' in result:
                 try:
                     result = int(result.split()[-1])
                 except (ValueError, IndexError):
                     result = 0
-            logger.debug(f"异步查询影响了 {result} 行数据")
+            logger.debug(f"Async query affected {result} rows of data")
         else:
-            # 对于其他语句（如CREATE, DROP等）
+            # For other statements (like CREATE, DROP, etc.)
             if params:
                 await conn.execute(sql, *params)
             else:
                 await conn.execute(sql)
             result = "Query executed successfully"
-            logger.debug("异步DDL查询执行成功")
+            logger.debug("Async DDL query executed successfully")
 
-        logger.info(f"异步SQL执行成功: {sql[:200]}{'...' if len(sql) > 50 else ''}")
+        logger.info(f"Async SQL executed successfully: {sql[:200]}{'...' if len(sql) > 50 else ''}")
         return result
 
     except Exception as e:
-        logger.error(f"异步SQL执行失败: {e}")
-        logger.debug(f"失败的异步SQL: {sql}")
+        logger.error(f"Async SQL execution failed: {e}")
+        logger.debug(f"Failed async SQL: {sql}")
         raise
     finally:
         if conn:
             pool = await get_db_pool()
             await pool.release_connection(conn)
-            logger.debug("异步连接已释放回连接池")
+            logger.debug("Async connection has been released back to connection pool")

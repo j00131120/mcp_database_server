@@ -25,6 +25,6 @@
             "dbActive": false
         }
     ],
-    "logPath": "/Volumes/store/mysql_mcp_server",
+    "logPath": "/path/to/logs",
     "logLevel": "info"
 }

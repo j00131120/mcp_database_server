@@ -56,7 +56,7 @@ Edit `dbconfig.json` with your database credentials:
             "dbActive": false
         }
     ],
-    "logPath": "/Volumes/store/oceanbase_mcp_server",
+    "logPath": "/path/to/logs",
     "logLevel": "info"
 }
 # dbType
@@ -64,7 +64,7 @@ Oceanbase Instance is in Oracle mode or Mysql mode.
 # dbActive
 Only database instances with dbActive set to true in the dbList configuration list are available. 
 # logPath
-MCP server log is stored in /Volumes/store/oceanbase_mcp_server/logs/mcp_server.log.
+MCP server log is stored in /path/to/logs/mcp_server.log.
 # logLevel
 TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
 ```
@@ -219,7 +219,7 @@ The `dbconfig.json` file supports multiple database instances:
             "dbActive": false   // other instances should be inactive
         }
     ],
-    "logPath": "/Volumes/store/oceanbase_mcp_server",
+    "logPath": "/path/to/logs",
     "logLevel": "info"
 }
 ```

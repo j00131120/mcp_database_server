@@ -56,7 +56,7 @@ pip install oceanbase-mcp-server3
             "dbActive": false
         }
     ],
-    "logPath": "/Volumes/store/oceanbase_mcp_server",
+    "logPath": "/path/to/logs",
     "logLevel": "info"
 }
 # dbType
@@ -64,7 +64,7 @@ OceanBase 实例处于 Oracle 模式或 MySQL 模式。
 # dbActive
 只有在 dbList 配置列表中将 dbActive 设置为 true 的数据库实例才可用。
 # logPath
-MCP 服务器日志存储在 /Volumes/store/oceanbase_mcp_server/logs/mcp_server.log。
+MCP 服务器日志存储在 /path/to/logs/mcp_server.log。
 # logLevel
 TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
 ```
@@ -219,7 +219,7 @@ await generate_demo_data("users", ["name", "email"], 50)
             "dbActive": false   // 其他实例应该是非活跃的
         }
     ],
-    "logPath": "/Volumes/store/oceanbase_mcp_server",
+    "logPath": "/path/to/logs",
     "logLevel": "info"
 }
 ```

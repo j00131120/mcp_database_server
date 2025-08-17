@@ -2,7 +2,7 @@
 """
 MCP SQL Server
 
-Main entry point for Postgresql/Rasesql DataSource MCP Client server.
+Main entry point for PostgreSQL DataSource MCP Client server.
 """
 import os
 import sys

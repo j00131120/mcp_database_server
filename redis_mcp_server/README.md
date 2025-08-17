@@ -67,13 +67,13 @@ Edit `dbconfig.json` with your database credentials:
             "dbActive": false
         }
     ],
-    "logPath": "/Volumes/store/mysql_mcp_server",
+    "logPath": "/path/to/logs",
     "logLevel": "info"
 }
 # dbActive
 Only database instances with dbActive set to true in the dbList configuration list are available. 
 # logPath
-Mcp server log is stored in /Volumes/store/mysql_mcp_server/logs/mcp_server.log.
+Mcp server log is stored in /path/to/logs/mcp_server.log.
 # logLevel
 TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
 ```

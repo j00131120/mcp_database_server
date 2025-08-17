@@ -1,6 +1,6 @@
 """
-数据库连接池管理模块
-提供异步PostgreSQL连接池功能
+Database Connection Pool Management Module
+Provides asynchronous PostgreSQL connection pool functionality
 """
 import asyncio
 import asyncpg
@@ -9,7 +9,7 @@ from src.utils.db_config import load_activate_db_config
 
 
 class DatabasePool:
-    """数据库连接池管理类"""
+    """Database connection pool management class"""
 
     _instance = None
     _pool = None
@@ -17,18 +17,18 @@ class DatabasePool:
 
     @classmethod
     async def get_instance(cls):
-        """获取单例实例"""
+        """Get singleton instance"""
         if cls._instance is None:
             cls._instance = DatabasePool()
             await cls._instance._initialize()
         return cls._instance
 
     async def _initialize(self):
-        """初始化连接池"""
+        """Initialize connection pool"""
         if self._pool is not None:
             return
 
-        # 获取活跃的数据库实例和配置
+        # Get active database instance and configuration
         db_instance, db_config = load_activate_db_config()
         self._config = db_config
 
@@ -45,7 +45,7 @@ class DatabasePool:
                 database=db_instance.db_database,
                 min_size=pool_size,
                 max_size=max_size,
-                max_inactive_connection_lifetime=pool_timeout # Keep consistent with synchronous version
+                command_timeout=pool_timeout # Command timeout for SQL execution
             )
             logger.info(
                 f"Database connection pool initialized successfully, pool minsize: {pool_size}, maxsize: {max_size},  timeout:{pool_timeout}s")
@@ -56,52 +56,52 @@ class DatabasePool:
             raise
 
     async def get_connection(self):
-        """获取数据库连接"""
+        """Get database connection from pool"""
         if self._pool is None:
             await self._initialize()
 
         try:
             conn = await self._pool.acquire()
-            logger.debug("从PostgreSQL连接池获取连接成功")
+            logger.debug("Successfully acquired connection from PostgreSQL connection pool")
             return conn
         except Exception as e:
-            logger.error(f"从PostgreSQL连接池获取连接失败: {str(e)}")
+            logger.error(f"Failed to acquire connection from PostgreSQL connection pool: {str(e)}")
             raise
 
     async def release_connection(self, conn):
-        """释放数据库连接回连接池"""
+        """Release database connection back to pool"""
         if self._pool is None:
-            logger.warning("PostgreSQL连接池不存在，无法释放连接")
+            logger.warning("PostgreSQL connection pool does not exist, cannot release connection")
             return
 
         try:
             self._pool.release(conn)
-            logger.debug("释放连接回PostgreSQL连接池成功")
+            logger.debug("Successfully released connection back to PostgreSQL connection pool")
         except Exception as e:
-            logger.error(f"释放连接回PostgreSQL连接池失败: {str(e)}")
+            logger.error(f"Failed to release connection back to PostgreSQL connection pool: {str(e)}")
 
     async def close_pool(self):
-        """关闭连接池"""
+        """Close connection pool"""
         if self._pool is None:
-            logger.warning("PostgreSQL连接池不存在，无需关闭")
+            logger.warning("PostgreSQL connection pool does not exist, no need to close")
             return
 
         try:
             self._pool.close()
             await self._pool.wait_closed()
             self._pool = None
-            logger.info("PostgreSQL连接池已关闭")
+            logger.info("PostgreSQL connection pool has been closed")
         except Exception as e:
-            logger.error(f"关闭PostgreSQL连接池失败: {str(e)}")
+            logger.error(f"Failed to close PostgreSQL connection pool: {str(e)}")
 
 
-# 导出连接池获取函数
+# Export connection pool getter function
 async def get_db_pool():
-    """获取数据库连接池实例"""
+    """Get database connection pool instance"""
     return await DatabasePool.get_instance()
 
 if __name__ == "__main__":
-    # 测试连接池
+    # Test connection pool
     async def test_pool():
         db_pool = await get_db_pool()
         conn = await db_pool.get_connection()
