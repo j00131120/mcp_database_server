@@ -135,7 +135,7 @@ cd mcp_database_server/oceanbase_mcp_server
         "run",
         "src/server.py"
       ],
-      "cwd": "/Volumes/store/mysql_mcp_server",
+      "cwd": "/Volumes/store/mysql_mcp_server", //项目绝对路径
       "env": {
         "config_file": "/Volumes/store/dbconfig.json"
       },
