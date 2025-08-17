@@ -19,57 +19,114 @@ A Model Context Protocol (MCP) server that enables secure interaction with MySQL
 
 ## 🛠️ Installation
 
-### 1. Clone the repository
+### 1. Install from PyPI (Recommended)
 ```bash
-git clone <repository-url>
-cd mysql_mcp_server
+pip install mysql-mcp-server3
 ```
 
-### 2. Install from PyPI (Recommended)
-```bash
-pip install mysql-server-mcp
-```
+### 2. Configure database connection
 
-### 3. Install from source
-```bash
-# Clone and install in development mode
-git clone <repository-url>
-cd mysql_mcp_server
-pip install -e .
-
-# Or install dependencies and run directly
-pip install -r requirements.txt
-```
-
-### 3. Configure database connection
 Edit `dbconfig.json` with your database credentials:
 
-```json
+```bash
 {
     "dbPoolSize": 5,
     "dbMaxOverflow": 10,
     "dbPoolTimeout": 30,
+    "dbType-Comment": "The database currently in use,such as MySQL/MariaDB/TiDB OceanBase/RDS/Aurora MySQL DataBases",
     "dbList": [
-        {
-            "dbInstanceId": "mysql_main",
+        {   "dbInstanceId": "oceanbase_1",
+            "dbHost": "localhost",
+            "dbPort": 2281,
+            "dbDatabase": "oceanbase_db",
+            "dbUsername": "root",
+            "dbPassword": "123456",
+            "dbType": "OceanBase",
+            "dbVersion": "V4.0.0",
+            "dbActive": true
+        },
+        {   "dbInstanceId": "mysql_2",
             "dbHost": "localhost",
             "dbPort": 3306,
-            "dbDatabase": "your_database",
-            "dbUsername": "your_username",
-            "dbPassword": "your_password",
+            "dbDatabase": "mysql_db",
+            "dbUsername": "root",
+            "dbPassword": "123456",
             "dbType": "MySQL",
             "dbVersion": "8.0",
-            "dbActive": true
+            "dbActive": false
+        },
+        {   "dbInstanceId": "tidb_3",
+            "dbHost": "localhost",
+            "dbPort": 4000,
+            "dbDatabase": "tidb_db",
+            "dbUsername": "root",
+            "dbPassword": "123456",
+            "dbType": "TiDB",
+            "dbVersion": "8.5.3",
+            "dbActive": false
         }
     ],
-    "logPath": "/path/to/logs",
+    "logPath": "/Volumes/store/mysql_mcp_server",
     "logLevel": "info"
 }
+# dbActive
+Only database instances with dbActive set to true in the dbList configuration list are available. 
+# logPath
+Mcp server log is stored in /Volumes/store/mysql_mcp_server/logs/mcp_server.log.
+# logLevel
+TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
 ```
 
-### 4. Environment Variables (Optional)
+### 3. Configure mcp json
+
 ```bash
-export config_file="/path/to/custom/dbconfig.json"
+{
+  "mcpServers": {
+    "mysql-mcp-client": {
+      "command": "mysql-mcp-server3",
+      "env": {
+        "config_file": "/Users/frank/store/dbconfig.json"
+      },
+      "disabled": false
+    }
+  }
+}
+
+# config_file
+dbconfig.json file path in your device
+```
+
+### 3. Clone the repository
+```json
+git clone <repository-url>
+cd mysql_mcp_server
+import current project into your IDE Tool
+
+```
+
+### 4. Configure mcp json By IDE Tool
+```bash
+{
+  "mcpServers": {
+    "mysql-mcp-client": {
+      "command": "uv",
+      "args": [
+        "run",
+        "src/server.py"
+      ],
+      "cwd": "/Volumes/store/mysql_mcp_server",
+      "env": {
+        "config_file": "/Volumes/store/dbconfig.json"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "describe_table",
+        "sql_exec",
+        "generate_demo_data"
+      ]
+    }
+  }
+}
 ```
 
 ## 🚀 Quick Start
@@ -92,7 +149,6 @@ The server provides the following MCP tools and resources:
 #### Tools
 - `sql_exec`: Execute any SQL statement
 - `describe_table`: Get table structure information
-- `execute_query_with_limit`: Execute SELECT queries with automatic LIMIT
 - `generate_demo_data`: Generate test data for tables
 
 #### Resources
@@ -125,20 +181,6 @@ await describe_table("users")
 **Returns:**
 - Table structure information including columns, types, and constraints
 
-### Limited Query Tool
-```python
-await execute_query_with_limit("SELECT * FROM users", 100)
-```
-
-**Parameters:**
-- `sql` (str): SELECT query statement
-- `limit` (int): Maximum rows to return (1-10000)
-
-**Security Features:**
-- Only SELECT queries allowed
-- Automatic LIMIT enforcement
-- Parameter validation
-
 ### Test Data Generation
 ```python
 await generate_demo_data("users", ["name", "email"], 50)
@@ -170,6 +212,17 @@ The `dbconfig.json` file supports multiple database instances:
             "dbType": "MySQL",
             "dbVersion": "8.0",
             "dbActive": true    // Only one instance should be active
+        },
+        {
+            "dbInstanceId": "unique_id",
+            "dbHost": "hostname",
+            "dbPort": 3306,
+            "dbDatabase": "database_name",
+            "dbUsername": "username",
+            "dbPassword": "password",
+            "dbType": "MySQL",
+            "dbVersion": "5.7",
+            "dbActive": false    // othre one instance should be unactive
         }
     ],
     "logPath": "/path/to/logs",
