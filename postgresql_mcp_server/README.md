@@ -1,4 +1,4 @@
-# MySQL MCP Server
+# PostgreSQL MCP Server
 
 A Model Context Protocol (MCP) server that enables secure interaction with PostgreSQL,RaseSQL databases.
 
