@@ -96,15 +96,15 @@ TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
 dbconfig.json file path in your device
 ```
 
-### 3. Clone the repository
-```json
+### 4. Clone the repository
+```bash
 git clone <repository-url>
 cd mysql_mcp_server
 import current project into your IDE Tool
 
 ```
 
-### 4. Configure mcp json By IDE Tool
+### 5. Configure mcp json By IDE Tool
 ```bash
 {
   "mcpServers": {
