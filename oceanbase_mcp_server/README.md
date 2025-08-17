@@ -1,11 +1,11 @@
 # OceanBase MCP Server
 
-A Model Context Protocol (MCP) server that enables secure interaction with OceanBase(Mysql/Oracle) databases.
+A Model Context Protocol (MCP) server that enables secure interaction with OceanBase databases. Supports both MySQL and Oracle compatibility modes with high-performance async operations.
 
 ## 🚀 Features
 
 - **MCP Protocol Support**: Built on FastMCP framework with standard MCP tools and resources
-- **Multi-Database Compatibility**: Support for OceanBase(Mysql/Oracle) 
+- **Multi-Database Compatibility**: Support for OceanBase (MySQL/Oracle modes) 
 - **Asynchronous Architecture**: Built with `aiomysql/oracledb` for high-performance database operations
 - **Connection Pooling**: Efficient connection management with configurable pool settings
 - **Security Features**: Query type restrictions, automatic LIMIT enforcement, and parameter validation
@@ -14,7 +14,7 @@ A Model Context Protocol (MCP) server that enables secure interaction with Ocean
 ## 📋 Prerequisites
 
 - Python >= 3.12
-- OceanBase(Mysql/Oracle)  database instance
+- OceanBase database instance (MySQL or Oracle mode)
 - Network access to database server
 
 ## 🛠️ Installation
@@ -28,7 +28,7 @@ pip install oceanbase-mcp-server3
 
 Edit `dbconfig.json` with your database credentials:
 
-```bash
+```json
 {
     "dbPoolSize": 5,
     "dbMaxOverflow": 10,
@@ -37,7 +37,7 @@ Edit `dbconfig.json` with your database credentials:
     "dbList": [
         {   "dbInstanceId": "oceanbase_1",
             "dbHost": "localhost",
-            "dbPort": 3306,
+            "dbPort": 2881,
             "dbDatabase": "oceanbase_db",
             "dbUsername": "root",
             "dbPassword": "123456",
@@ -47,7 +47,7 @@ Edit `dbconfig.json` with your database credentials:
         },
         {   "dbInstanceId": "oceanbase_2",
             "dbHost": "localhost",
-            "dbPort": 2282,
+            "dbPort": 2881,
             "dbDatabase": "oceanbase_db",
             "dbUsername": "root",
             "dbPassword": "123456",
@@ -56,7 +56,7 @@ Edit `dbconfig.json` with your database credentials:
             "dbActive": false
         }
     ],
-    "logPath": "/Volumes/store/mysql_mcp_server",
+    "logPath": "/Volumes/store/oceanbase_mcp_server",
     "logLevel": "info"
 }
 # dbType
@@ -64,40 +64,40 @@ Oceanbase Instance is in Oracle mode or Mysql mode.
 # dbActive
 Only database instances with dbActive set to true in the dbList configuration list are available. 
 # logPath
-Mcp server log is stored in /Volumes/store/oceanbase_mcp_server/logs/mcp_server.log.
+MCP server log is stored in /Volumes/store/oceanbase_mcp_server/logs/mcp_server.log.
 # logLevel
 TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
 ```
 
-### 3. Configure mcp json
+### 3. Configure MCP Client
 
-```bash
+Add to your MCP client configuration file:
+
+```json
 {
   "mcpServers": {
     "oceanbase-mcp-client": {
       "command": "oceanbase-mcp-server3",
       "env": {
-        "config_file": "/Users/frank/store/dbconfig.json"
+        "config_file": "/path/to/your/dbconfig.json"
       },
       "disabled": false
     }
   }
 }
-
-# config_file
-dbconfig.json file path in your device
 ```
 
-### 4. Clone the repository
-```bash
-git clone <repository-url>
-cd oceanbase_mcp_server
-import current project into your IDE Tool
+**Note**: Replace `/path/to/your/dbconfig.json` with the actual path to your configuration file.
 
+### 4. Clone the repository (Development Mode)
+```bash
+git clone https://github.com/j00131120/mcp_database_server.git
+cd mcp_database_server/oceanbase_mcp_server
+# Import project into your IDE
 ```
 
-### 5. Configure mcp json By IDE Tool
-```bash
+### 5. Configure MCP Client for Development
+```json
 {
   "mcpServers": {
     "oceanbase-mcp-client": {
@@ -126,10 +126,13 @@ import current project into your IDE Tool
 ### Start the MCP Server
 ```bash
 # Using the installed package
-mysql-mcp-server
+oceanbase-mcp-server3
 
-# Using fastmcp CLI
+# Using fastmcp CLI (development mode)
 fastmcp run src/server.py
+
+# Using uv (development mode)
+uv run src/server.py
 
 # Or directly with Python
 python src/server.py
@@ -207,16 +210,16 @@ The `dbconfig.json` file supports multiple database instances:
         },
         {   "dbInstanceId": "oceanbase_2",
             "dbHost": "localhost",
-            "dbPort": 2282,
+            "dbPort": 2881,
             "dbDatabase": "oceanbase_db",
             "dbUsername": "root",
             "dbPassword": "123456",
             "dbType": "mysql",
             "dbVersion": "V3.0.0",
-            "dbActive": false   // othre one instance should be unactive
+            "dbActive": false   // other instances should be inactive
         }
     ],
-    "logPath": "/Volumes/store/mysql_mcp_server",
+    "logPath": "/Volumes/store/oceanbase_mcp_server",
     "logLevel": "info"
 }
 ```
@@ -229,8 +232,8 @@ The `dbconfig.json` file supports multiple database instances:
 ## 🔒 Security Features
 
 ### Query Restrictions
-- **Read-only Queries**: `execute_query_with_limit` only allows SELECT statements
-- **Automatic LIMIT**: Prevents excessive data retrieval (max 10,000 rows)
+- **Parameterized Queries**: All SQL queries use parameter binding to prevent SQL injection
+- **Transaction Management**: Automatic commit/rollback for data integrity
 - **Parameter Validation**: Input validation for all parameters
 
 ### Configuration Security
@@ -273,6 +276,37 @@ src/
 - **Configurable Output**: File and console logging
 - **Structured Format**: Timestamp, level, module, function, and line information
 
+## 🐳 Docker Support
+
+### Using Docker Compose
+
+This project includes a comprehensive Docker Compose setup for OceanBase. See the docker-compose documentation for details.
+
+```bash
+# Start OceanBase with monitoring stack
+docker-compose up -d
+
+# Simple OceanBase setup (for development)
+docker-compose -f docker-compose.simple.yml up -d
+```
+
+### OceanBase Connection
+After starting Docker containers, connect using:
+```bash
+# MySQL mode connection
+mysql -h 127.0.0.1 -P 2881 -u root -p123456
+
+# Update your dbconfig.json to point to Docker instance
+{
+    "dbHost": "localhost",
+    "dbPort": 2881,
+    "dbDatabase": "test",
+    "dbUsername": "root",
+    "dbPassword": "123456",
+    "dbType": "mysql"
+}
+```
+
 ## 🧪 Testing
 
 ### Generate Test Data
@@ -292,13 +326,15 @@ print(result)  # {'success': True, 'result': [{'test': 1}]}
 
 ### Database Status
 ```python
-# Get database configuration
-config = await get_database_config()
-print(f"Database: {config['dbType']} {config['dbVersion']}")
+# Get database configuration (via MCP resource)
+# This will show current active database instance configuration
 
-# Get table information
-tables = await get_database_tables()
-print(f"Total tables: {len(tables)}")
+# Get table information (via MCP resource)  
+# This will show all tables with their structure and record counts
+
+# Example output when using MCP client:
+# Database: oracle V4.0.0 (or mysql V3.0.0)
+# Tables: users, products, orders, etc.
 ```
 
 ### Connection Pool Status
@@ -312,8 +348,11 @@ print(f"Total tables: {len(tables)}")
 
 #### Connection Errors
 ```bash
-# Check database connectivity
-mysql -h localhost -P 3306 -u username -p database_name
+# Check OceanBase connectivity (MySQL mode)
+mysql -h localhost -P 2881 -u username -p database_name
+
+# Check OceanBase connectivity (Oracle mode)
+sqlplus username/password@localhost:2881/database_name
 
 # Verify configuration
 python -c "from src.utils.db_config import load_db_config; print(load_db_config())"
@@ -347,12 +386,15 @@ Set log level to DEBUG in configuration:
 
 ### Development Setup
 ```bash
-# Install in development mode with all dependencies
-pip install -e ".[dev,test,docs]"
+# Install dependencies with uv
+uv sync
 
 # Run with debug logging
-export LOG_LEVEL=debug
-python src/server.py
+export config_file="/path/to/your/dbconfig.json"
+uv run src/server.py
+
+# Or use fastmcp for development
+fastmcp run src/server.py
 ```
 
 ### Code Quality Tools
@@ -388,6 +430,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [FastMCP](https://github.com/fastmcp/fastmcp) - MCP framework
 - [aiomysql](https://github.com/aio-libs/aiomysql) - Async MySQL driver
+- [oracledb](https://oracle.github.io/python-oracledb/) - Oracle Database driver
 - [loguru](https://github.com/Delgan/loguru) - Logging library
 
 ## 📞 Support
@@ -397,6 +440,17 @@ For support and questions:
 - Contact: [j00131120@163.com](mailto:j00131120@163.com)
 
 ## 🔄 Changelog
+
+### v1.0.3 (Current)
+- Added Oracle database driver support (`oracledb`)
+- Enhanced multi-database compatibility
+- Improved configuration management
+- Bug fixes and performance optimizations
+
+### v1.0.1
+- Enhanced type annotations and error handling
+- Fixed configuration file path resolution
+- Package name changed to `oceanbase-mcp-server3`
 
 ### v1.0.0
 - Initial release
@@ -409,33 +463,25 @@ For support and questions:
 
 ### Build the Package
 ```bash
-# Clean and build
-python build.py build
+# Using uv (recommended)
+uv build
 
-# Build and check
-python build.py check
-
-# Build and test installation
-python build.py test
-
-# Complete build process
-python build.py all
+# Or using traditional tools
+python -m build
 ```
 
 ### Publish to PyPI
 ```bash
-# Build, test, and publish
-python build.py publish
-
-# Or manually
-python -m build
+# Check the package
 python -m twine check dist/*
+
+# Upload to PyPI
 python -m twine upload dist/*
 ```
 
 ### Package Information
-- **Package Name**: `mysql-server-mcp`
-- **Entry Point**: `mysql-mcp-server`
-- **MCP Server Entry Point**: `mysql`
+- **Package Name**: `oceanbase-mcp-server3`
+- **Entry Point**: `oceanbase-mcp-server3`
+- **MCP Server Entry Point**: `main`
 - **Python Version**: >= 3.12
 - **License**: MIT

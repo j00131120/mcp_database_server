@@ -5,11 +5,23 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "oceanbase-mcp-server3"
 version = "1.0.3"
-description = "A Model Context Protocol (MCP) server that enables secure interaction with OceanBase DataBases."
+description = "A Model Context Protocol (MCP) server that enables secure interaction with OceanBase databases. Supports both MySQL and Oracle compatibility modes with high-performance async operations."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
-keywords = ["mcp", "oceanbase", "model-context-protocol", "async", "connection-pool"]
+keywords = [
+    "mcp", 
+    "oceanbase", 
+    "model-context-protocol", 
+    "async", 
+    "connection-pool",
+    "database",
+    "mysql", 
+    "oracle",
+    "fastmcp",
+    "ai",
+    "llm"
+]
 authors = [
     {name = "Frank Jin", email = "j00131120@163.com"}
 ]
@@ -20,16 +32,24 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
     "Topic :: Database :: Front-Ends",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Networking",
-    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Framework :: AsyncIO",
+    "Framework :: FastAPI",
     "Typing :: Typed",
+    "Environment :: Console",
+    "Natural Language :: English",
+    "Natural Language :: Chinese (Simplified)"
 ]
 dependencies = [
     "fastmcp>=2.11.3",
@@ -39,23 +59,137 @@ dependencies = [
     "aiomysql>=0.2.0"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "pre-commit>=3.3.0"
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.11.0"
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.1.0",
+    "mkdocs-mermaid2-plugin>=1.0.0"
+]
+docker = [
+    "docker>=6.1.0",
+    "docker-compose>=1.29.0"
+]
+
 [project.urls]
-Homepage = "https://github.com/j00131120/mcp_database_server/tree/main/mysql_mcp_server"
-Documentation = "https://github.com/j00131120/mcp_database_server/blob/main/mysql_mcp_server/README.md"
+Homepage = "https://github.com/j00131120/mcp_database_server/tree/main/oceanbase_mcp_server"
+Documentation = "https://github.com/j00131120/mcp_database_server/blob/main/oceanbase_mcp_server/README.md"
+"Documentation (中文)" = "https://github.com/j00131120/mcp_database_server/blob/main/oceanbase_mcp_server/README-zh.md"
 Repository = "https://github.com/j00131120/mcp_database_server.git"
 "Bug Tracker" = "https://github.com/j00131120/mcp_database_server/issues"
-"Source Code" = "https://github.com/j00131120/mcp_database_server/tree/main/mysql_mcp_server"
-"Download" = "https://github.com/j00131120/mcp_database_server/tree/main/mysql_mcp_server"
-"Changelog" = "https://github.com/j00131120/mcp_database_server/blob/main/mysql_mcp_server/CHANGELOG.md"
+"Source Code" = "https://github.com/j00131120/mcp_database_server/tree/main/oceanbase_mcp_server"
+"Changelog" = "https://github.com/j00131120/mcp_database_server/blob/main/oceanbase_mcp_server/CHANGELOG.md"
+"Docker Images" = "https://github.com/j00131120/mcp_database_server/tree/main/oceanbase_mcp_server#docker-support"
 
 [project.scripts]
 oceanbase-mcp-server3 = "src.server:main"
 
 [project.entry-points."mcp.servers"]
-mysql = "src.server:mcp"
+oceanbase = "src.server:mcp"
 
 [tool.setuptools]
 packages = ["src", "src.utils", "src.resources", "src.tools"]
+
+[tool.setuptools.package-data]
+"src" = ["py.typed"]
+
+# Black configuration
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+# isort configuration
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src"]
+
+# mypy configuration
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "aiomysql.*",
+    "oracledb.*",
+    "fastmcp.*",
+    "mcp.*"
+]
+ignore_missing_imports = true
+
+# pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "tests/*",
+    "src/**/__init__.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
 
 [[tool.uv.index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
