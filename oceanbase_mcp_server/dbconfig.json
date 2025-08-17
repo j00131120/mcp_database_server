@@ -2,15 +2,15 @@
     "dbPoolSize": 5,
     "dbMaxOverflow": 10,
     "dbPoolTimeout": 30,
-    "dbType-Comment": "The database currently in use,such as OceanBase DataBases",
+    "dbType-Comment": "The database currently in use,such as OceanBase(Mysql/Oracle) DataBases",
     "dbList": [
         {   "dbInstanceId": "oceanbase_1",
             "dbHost": "localhost",
-            "dbPort": 2281,
+            "dbPort": 3306,
             "dbDatabase": "oceanbase_db",
             "dbUsername": "root",
             "dbPassword": "123456",
-            "dbType": "OceanBase",
+            "dbType": "oracle",
             "dbVersion": "V4.0.0",
             "dbActive": true
         },
@@ -21,7 +21,7 @@
             "dbUsername": "root",
             "dbPassword": "123456",
             "dbType": "mysql",
-            "dbVersion": "8.0",
+            "dbVersion": "V3.0.0",
             "dbActive": false
         }
     ],
