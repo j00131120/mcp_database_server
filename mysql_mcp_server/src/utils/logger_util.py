@@ -8,50 +8,65 @@ import json
 import os
 import sys
 from loguru import logger
-
-from src.server import project_path
-from src.utils.db_config import get_db_config_file
-
+project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 loglevel_array = ['TRACE', 'DEBUG', 'INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL']
+
+def get_db_config_file() -> str:
+    """
+    Get database configuration file path
+    Priority: Environment variable config_file > Default dbconfig.json
+    
+    Returns:
+        str: Path to the database configuration file
+    """
+    config_file = os.getenv("config_file")
+    if config_file and os.path.isfile(config_file):
+        logger.info(f"Get database configuration path from environment variable config_file: {config_file}")
+        return config_file
+    else:
+        default_config = os.path.join(project_path, "dbconfig.json")
+        logger.info(f"Using default database configuration path: {default_config}")
+        return default_config
+
 db_config_path = get_db_config_file()
-def get_log_path_from_config():
-    """Get log path from configuration file"""
+
+def get_log_config() -> tuple[str, str]:
+    """Get log path and log level from configuration file
+    
+    Returns:
+        tuple[str, str]: A tuple containing (log_path, log_level)
+            - log_path (str): Path to the log directory
+            - log_level (str): Log level (TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL)
+    """
     config_file = db_config_path
     try:
         with open(config_file, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            log_path = config.get('logPath')
-        if log_path is None or 0 == len(log_path.strip()):
+            
+        # Get log path
+        log_path = config.get('logPath')
+        if log_path is None or len(log_path.strip()) == 0:
             log_path = os.path.join(project_path, "logs")
         else:
             log_path = os.path.join(log_path, "logs")
-        return log_path
-    except (FileNotFoundError, json.JSONDecodeError, KeyError):
-        # If configuration file doesn't exist or parsing fails, use default path
-        return os.path.join(project_path, "logs")
 
-log_path = get_log_path_from_config()
+        # Get log level
+        log_level = config.get('logLevel')
+        if log_level is None or len(log_level.strip()) == 0:
+            log_level = "INFO"
+        else:
+            log_level = log_level.upper()
+            if log_level not in loglevel_array:
+                log_level = "INFO"
+                
+        return log_path, log_level
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        # If configuration file doesn't exist or parsing fails, use default values
+        return os.path.join(project_path, "logs"), "INFO"
+
+log_path, log_level = get_log_config()
 log_file = os.path.join(log_path, "mcp_server.log")
 
-def get_log_level_from_config():
-    """Get log level from configuration file"""
-    config_file = db_config_path
-    try:
-        with open(config_file, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            log_level = config.get('logLevel')
-            if log_level is None or 0 == len(log_level.strip()):
-                log_level = "INFO"
-            else:
-                log_level=log_level.upper()
-                if log_level not in loglevel_array:
-                 log_level = "INFO"
-        return log_level
-    except (FileNotFoundError, json.JSONDecodeError, KeyError):
-        # If configuration file doesn't exist or parsing fails, default to INFO level
-        return "INFO"
-
-log_level = get_log_level_from_config()
 
 def setup_logger(log_file: str, log_level:str):
     """Configure logging output"""

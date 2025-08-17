@@ -8,27 +8,7 @@ import json
 import os
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
-from .logger_util import logger
-from ..server import project_path
-
-
-def get_db_config_file() -> str:
-    """
-    Get database configuration file path
-    Priority: Environment variable config_file > Default dbconfig.json
-    """
-    config_file = os.getenv("config_file")
-    if config_file:
-        logger.debug(f"Get database configuration path from environment variable config_file: {config_file}")
-        return config_file
-    else:
-        default_config = os.path.join(project_path, "dbconfig.json")
-        logger.debug(f"Using default database configuration path: {default_config}")
-        return default_config
-
-
-db_config_path = get_db_config_file()
-
+from .logger_util import logger, db_config_path
 
 @dataclass
 class DatabaseInstance:

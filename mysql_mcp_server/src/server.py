@@ -16,7 +16,7 @@ sys.path.insert(0,project_path)
 from src.utils.logger_util import logger, db_config_path
 from src.utils.db_operate import execute_sql
 from src.resources.db_resources import generate_database_tables, generate_database_config
-from src.utils import load_activate_db_config, load_db_config
+from src.utils import load_activate_db_config
 from src.tools.db_tool import generate_test_data
 # Create global MCP server instance
 mcp = FastMCP("DataSource MCP Client Server")
@@ -97,92 +97,6 @@ async def describe_table(table_name: str):
     """
     logger.info(f"MCP tool: Describe table structure - {table_name}")
     return await sql_exec(f"DESCRIBE {table_name};")
-
-
-@mcp.tool()
-async def execute_query_with_limit(sql: str, limit: int = 100):
-    """
-    Limited query execution tool
-    
-    Function description:
-    Execute SELECT query statements and automatically add LIMIT restrictions to prevent queries from returning excessive data
-    Only allows SELECT queries to ensure data security
-    
-    Parameter description:
-    - sql (str): SELECT query statement, must start with SELECT
-    - limit (int): Maximum return row limit, default 100, range 1-10000
-    
-    Return value:
-    - dict: Dictionary containing query results
-        - success (bool): Whether query was successful
-        - result: Query result data list
-        - limit_applied (int): Actually applied LIMIT value
-        - message (str): Query status description
-        - error (str): Error message on failure (only exists when success=False)
-    
-    Security features:
-    - Only allows SELECT queries, prevents data modification
-    - Automatically adds LIMIT restrictions, prevents large data returns
-    - Parameter validation, ensures limit is within reasonable range
-    
-    Usage examples:
-    - execute_query_with_limit("SELECT * FROM users", 50)
-    - execute_query_with_limit("SELECT name, age FROM users WHERE age > 18", 200)
-    
-    Notes:
-    - If SQL already contains LIMIT clause, warning will be logged but execution continues
-    - Queries exceeding 10000 rows will be rejected
-    """
-    logger.info(f"MCP tool: Execute limited query - SQL: {sql}, LIMIT: {limit}")
-    
-    # Validate SQL statement type
-    sql_trimmed = sql.strip().upper()
-    if not sql_trimmed.startswith('SELECT'):
-        return {
-            "success": False,
-            "error": "Only SELECT query statements are allowed",
-            "message": "Query type not supported"
-        }
-    
-    # Validate limit parameter
-    if not isinstance(limit, int) or limit < 1 or limit > 10000:
-        return {
-            "success": False,
-            "error": "limit parameter must be an integer between 1-10000",
-            "message": "Parameter validation failed"
-        }
-    
-    try:
-        # Check if SQL already contains LIMIT
-        if 'LIMIT' not in sql_trimmed:
-            # Add LIMIT clause
-            limited_sql = f"{sql.rstrip(';')} LIMIT {limit};"
-        else:
-            # If LIMIT already exists, use original SQL but log warning
-            limited_sql = sql
-            logger.warning(f"SQL statement already contains LIMIT clause: {sql}")
-        
-        result = await sql_exec(limited_sql)
-        
-        if result.get("success"):
-            return {
-                "success": True,
-                "result": result["result"],
-                "limit_applied": limit,
-                "message": "Query executed successfully"
-            }
-        else:
-            return result
-            
-    except Exception as e:
-        error_msg = str(e)
-        logger.error(f"Limited query execution failed: {error_msg}")
-        return {
-            "success": False,
-            "error": error_msg,
-            "message": "Query execution failed"
-        }
-
 
 @mcp.tool()
 async def generate_demo_data(table_name: str, columns_name: List[str], num: int):

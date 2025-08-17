@@ -9,7 +9,6 @@ from .db_config import (
     DatabaseInstance,
     DatabaseInstanceConfig,
     DatabaseInstanceConfigLoader,
-    load_db_config,
     load_activate_db_config
 )
 from .db_operate import execute_sql
@@ -23,7 +22,6 @@ __all__ = [
     "DatabaseInstance",
     "DatabaseInstanceConfig", 
     "DatabaseInstanceConfigLoader",
-    "load_db_config",
     "load_activate_db_config",
     # Database operations
     "execute_sql",
