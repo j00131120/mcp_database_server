@@ -7,8 +7,7 @@ Main entry point for OceanBase DataSource MCP Client server.
 import os
 import sys
 from typing import List
-
-from mcp.server.fastmcp.server import FastMCP
+from fastmcp import FastMCP
 
 project_path=os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # Add current directory to Python module search path

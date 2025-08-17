@@ -7,8 +7,7 @@ Main entry point for MySQL/MariaDB/TiDB/AWS OceanBase/RDS/Aurora MySQL DataSourc
 import os
 import sys
 from typing import List
-
-from mcp.server.fastmcp.server import FastMCP
+from fastmcp import FastMCP
 
 project_path=os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # Add current directory to Python module search path

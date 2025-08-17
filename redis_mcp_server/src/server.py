@@ -6,7 +6,7 @@ Main entry point for Redis MCP Client server.
 """
 import os
 import sys
-from mcp.server.fastmcp.server import FastMCP
+from fastmcp import FastMCP
 from src.resources.db_resources import generate_database_config, get_connection_status
 from src.tools.db_tool import generate_test_data, get_redis_server_info, get_redis_memory_info, get_redis_clients_info, \
     get_redis_stats_info, get_database_info, get_keys_sample, get_key_types_distribution, get_config_info
