@@ -1,112 +1,124 @@
 # Redis MCP Server
 
-A Model Context Protocol (MCP) server that enables secure interaction with Redis databases.
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
+[![Redis Version](https://img.shields.io/badge/redis-5.0%2B-red.svg)](https://redis.io)
+[![FastMCP](https://img.shields.io/badge/FastMCP-2.11.3%2B-green.svg)](https://github.com/fastmcp/fastmcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+A Model Context Protocol (MCP) server that enables secure, efficient interaction with Redis databases through AI assistants and applications.
 
 ## 🚀 Features
 
-- **MCP Protocol Support**: Built on FastMCP framework with standard MCP tools and resources
-- **Multi-Database Compatibility**: Support for Redis
-- **Asynchronous Architecture**: Built with `hiredis` for high-performance database operations
-- **Connection Pooling**: Efficient connection management with configurable pool settings
-- **Security Features**: Query type restrictions, automatic LIMIT enforcement, and parameter validation
-- **Comprehensive Tools**: SQL execution, table structure queries, and test data generation
+- **🔌 MCP Protocol Support**: Built on FastMCP framework with standard MCP tools and resources
+- **🗄️ Redis Compatibility**: Support for Redis single, master-slave, and cluster deployments
+- **⚡ Asynchronous Architecture**: Built with `redis.asyncio` and `hiredis` for high-performance operations
+- **🔗 Connection Pooling**: Efficient connection management with configurable pool settings
+- **🔒 Security Features**: Password protection, SSL support, and connection validation
+- **🛠️ Comprehensive Tools**: Redis command execution, monitoring, and data management
+- **📊 Monitoring & Analytics**: Server info, memory usage, client connections, and key statistics
+- **🔧 Flexible Configuration**: JSON-based configuration with multiple instance support
+- **📝 Detailed Logging**: Structured logging with configurable levels and file rotation
+- **🐳 Production Ready**: Health checks, error handling, and graceful connection management
 
 ## 📋 Prerequisites
 
-- Python >= 3.12
-- MySQL/MariaDB/TiDB/OceanBase database instance
-- Network access to database server
+- **Python**: >= 3.12
+- **Redis**: >= 5.0.0
+- **Network Access**: To Redis server instance(s)
 
 ## 🛠️ Installation
 
 ### 1. Install from PyPI (Recommended)
 ```bash
-pip install mysql-mcp-server3
+pip install redis-mcp-server3
 ```
 
 ### 2. Configure database connection
 
 Edit `dbconfig.json` with your database credentials:
 
-```bash
+```json
 {
-    "redisEncoding": "utf-8",
-    "redisPoolSize": 5,
-    "redisMaxConnections": 10,
-    "redisConnectionTimeout": 30,
-    "socketTimeout": 30,
-    "retryOnTimeout": true,
-    "healthCheckInterval": 30,
-    "redisType-Comment": "single 单机模式、masterslave 主从模式、cluster 集群模式",
-    "redisList": [
-        {
-            "redisInstanceId": "redis-local-single",
-            "redisType": "single",
-            "redisHost": "localhost",
-            "redisPort": 6379,
-            "redisDatabase": 0,
-            "redisPassword": 123456,
-            "dbActive": true
-        },
-        {
-            "redisInstanceId": "redis-local-single",
-            "redisType": "single",
-            "redisHost": "localhost",
-            "redisPort": 6379,
-            "redisDatabase": 0,
-            "redisPassword": 123456,
-            "dbActive": false
-        },
-        {
-            "redisInstanceId": "redis-local-single",
-            "redisType": "single",
-            "redisHost": "localhost",
-            "redisPort": 6379,
-            "redisDatabase": 0,
-            "redisPassword": 123456,
-            "dbActive": false
-        }
-    ],
-    "logPath": "/path/to/logs",
-    "logLevel": "info"
+  "redisEncoding": "utf-8",
+  "redisPoolSize": 5,
+  "redisMaxConnections": 10,
+  "redisConnectionTimeout": 30,
+  "socketTimeout": 30,
+  "retryOnTimeout": true,
+  "healthCheckInterval": 30,
+  "redisType-Comment": "single 单机模式、masterslave 主从模式、cluster 集群模式",
+  "redisList": [
+    {
+      "redisInstanceId": "redis-local-single",
+      "redisType": "single",
+      "redisHost": "localhost",
+      "redisPort": 6379,
+      "redisDatabase": 0,
+      "redisPassword": 123456,
+      "dbActive": true
+    },
+    {
+      "redisInstanceId": "redis-ms-single",
+      "redisType": "masterslave",
+      "redisHost": "localhost",
+      "redisPort": 6379,
+      "redisDatabase": 0,
+      "redisPassword": 123456,
+      "dbActive": false
+    },
+    {
+      "redisInstanceId": "redis-cluster-single",
+      "redisType": "cluster",
+      "redisHost": "localhost",
+      "redisPort": 6379,
+      "redisDatabase": 0,
+      "redisPassword": 123456,
+      "dbActive": false
+    }
+  ],
+  "logPath": "/path/to/logs",
+  "logLevel": "info"
 }
+# redisType
+Redis Instance is in single、masterslave、cluster mode.
 # dbActive
 Only database instances with dbActive set to true in the dbList configuration list are available. 
 # logPath
-Mcp server log is stored in /path/to/logs/mcp_server.log.
+MCP server log is stored in /path/to/logs/mcp_server.log.
 # logLevel
 TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
 ```
 
-### 3. Configure mcp json
+### 3. Configure MCP Client
 
-```bash
+Add to your MCP client configuration file:
+
+```json
 {
   "mcpServers": {
-    "redis-mcp-client": {
+    "oceanbase-mcp-client": {
       "command": "redis-mcp-server3",
       "env": {
-        "config_file": "/Users/frank/store/dbconfig.json"
+        "config_file": "/path/to/your/dbconfig.json"
       },
       "disabled": false
     }
   }
 }
-
-# config_file
-dbconfig.json file path in your device
 ```
 
-### 4. Clone the repository
-```bash
-git clone <repository-url>
-cd mysql_mcp_server
-import current project into your IDE Tool
+**Note**: Replace `/path/to/your/dbconfig.json` with the actual path to your configuration file.
 
+### 4. Clone the repository (Development Mode)
+```bash
+git clone https://github.com/j00131120/mcp_database_server.git
+cd mcp_database_server/redis_mcp_server
+# Import project into your IDE
 ```
 
-### 5. Configure mcp json By IDE Tool
-```bash
+### 5. Configure MCP Client for Development
+```json
 {
   "mcpServers": {
     "redis-mcp-client": {
@@ -119,12 +131,7 @@ import current project into your IDE Tool
       "env": {
         "config_file": "/Volumes/store/dbconfig.json"
       },
-      "disabled": false,
-      "autoApprove": [
-        "describe_table",
-        "sql_exec",
-        "generate_demo_data"
-      ]
+      "disabled": false
     }
   }
 }
@@ -132,240 +139,389 @@ import current project into your IDE Tool
 
 ## 🚀 Quick Start
 
-### Start the MCP Server
-```bash
-# Using the installed package
-redis-mcp-server
+### 1. Start the MCP Server
 
-# Using fastmcp CLI
+```bash
+# Using installed package
+redis-mcp-server3
+
+# Using FastMCP CLI
 fastmcp run src/server.py
 
-# Or directly with Python
+# Direct Python execution
 python src/server.py
 ```
 
-### Using with MCP Clients
-The server provides the following MCP tools and resources:
+### 2. Basic Usage Examples
 
-#### Tools
-- `sql_exec`: Execute any SQL statement
-- `describe_table`: Get table structure information
-- `generate_demo_data`: Generate test data for tables
+```python
+# Execute Redis commands
+await redis_exec("SET", ["user:1001", "John Doe"])
+await redis_exec("GET", ["user:1001"])
 
-#### Resources
-- `database://tables`: Database table metadata
-- `database://config`: Database configuration information
+# Hash operations
+await redis_exec("HSET", ["user:1001:profile", "name", "John", "age", "30"])
+await redis_exec("HGETALL", ["user:1001:profile"])
+
+# List operations
+await redis_exec("LPUSH", ["tasks", "task1", "task2"])
+await redis_exec("LRANGE", ["tasks", "0", "-1"])
+
+# Get server information
+server_info = await get_server_info()
+memory_info = await get_memory_info()
+```
 
 ## 📚 API Reference
 
-### SQL Execution Tool
-```python
-await sql_exec("SELECT * FROM users WHERE age > 18")
-```
+### MCP Tools
+
+#### `redis_exec(command: str, args: list = None)`
+Execute any Redis command with arguments.
 
 **Parameters:**
-- `sql` (str): SQL statement to execute
+- `command` (str): Redis command name (e.g., 'GET', 'SET', 'HGET')
+- `args` (list, optional): Command arguments
 
 **Returns:**
-- `success` (bool): Execution status
-- `result`: Query results or affected rows
-- `message` (str): Status description
+- `dict`: Execution result with success status and data
 
-### Table Structure Tool
+**Examples:**
 ```python
-await describe_table("users")
+# String operations
+await redis_exec("SET", ["key1", "value1"])
+await redis_exec("GET", ["key1"])
+await redis_exec("SETEX", ["key2", "60", "temp_value"])
+
+# Hash operations  
+await redis_exec("HSET", ["hash1", "field1", "value1"])
+await redis_exec("HGETALL", ["hash1"])
+
+# List operations
+await redis_exec("LPUSH", ["list1", "item1", "item2"])
+await redis_exec("LRANGE", ["list1", "0", "-1"])
+
+# Set operations
+await redis_exec("SADD", ["set1", "member1", "member2"])
+await redis_exec("SMEMBERS", ["set1"])
 ```
 
-**Parameters:**
-- `table_name` (str): Table name (supports `database.table` format)
-
-**Returns:**
-- Table structure information including columns, types, and constraints
-
-### Test Data Generation
-```python
-await generate_demo_data("users", ["name", "email"], 50)
-```
+#### `gen_test_data(table: str, columns: list, num: int = 10)`
+Generate test data for Redis hash structures.
 
 **Parameters:**
-- `table_name` (str): Target table name
-- `columns_name` (List[str]): Column names to populate
+- `table` (str): Table/prefix name for the keys
+- `columns` (list): Field names to populate
 - `num` (int): Number of test records to generate
 
-## ⚙️ Configuration
+#### `get_server_info()`
+Get Redis server basic information.
 
-### Database Configuration
-The `dbconfig.json` file supports multiple database instances:
+**Returns:**
+- Server version, mode, OS, architecture, uptime
 
-```json
-{
-    "dbPoolSize": 5,           // Minimum connection pool size
-    "dbMaxOverflow": 10,       // Maximum overflow connections
-    "dbPoolTimeout": 30,       // Connection timeout in seconds
-    "dbList": [
-        {
-            "dbInstanceId": "unique_id",
-            "dbHost": "hostname",
-            "dbPort": 3306,
-            "dbDatabase": "database_name",
-            "dbUsername": "username",
-            "dbPassword": "password",
-            "dbType": "MySQL",
-            "dbVersion": "8.0",
-            "dbActive": true    // Only one instance should be active
-        },
-        {
-            "dbInstanceId": "unique_id",
-            "dbHost": "hostname",
-            "dbPort": 3306,
-            "dbDatabase": "database_name",
-            "dbUsername": "username",
-            "dbPassword": "password",
-            "dbType": "MySQL",
-            "dbVersion": "5.7",
-            "dbActive": false    // othre one instance should be unactive
-        }
-    ],
-    "logPath": "/path/to/logs",
-    "logLevel": "info"
-}
-```
+#### `get_memory_info()`
+Get Redis memory usage statistics.
 
-### Logging Configuration
-- **Log Levels**: TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
-- **Log Rotation**: 10 MB per file, 7 days retention
-- **Output**: Both stderr (for MCP) and file logging
+**Returns:**
+- Memory usage, peak usage, RSS memory, max memory settings
 
-## 🔒 Security Features
+#### `get_clients_info()`
+Get Redis client connection information.
 
-### Query Restrictions
-- **Read-only Queries**: `execute_query_with_limit` only allows SELECT statements
-- **Automatic LIMIT**: Prevents excessive data retrieval (max 10,000 rows)
-- **Parameter Validation**: Input validation for all parameters
+**Returns:**
+- Connected clients count, input/output buffer sizes
 
-### Configuration Security
-- **Password Hiding**: Sensitive information is masked in responses
-- **Instance Isolation**: Only active database configuration is exposed
-- **Environment Override**: Secure configuration file path management
+#### `get_stats_info()`
+Get Redis operation statistics.
+
+**Returns:**
+- Total connections, commands processed, keyspace hits/misses
+
+#### `get_db_info()`
+Get Redis database information.
+
+**Returns:**
+- Database size, keyspace information
+
+#### `get_keys_info()`
+Get sample key information (first 10 keys).
+
+**Returns:**
+- Total key count, sample keys with types and TTL
+
+#### `get_key_types()`
+Get key type distribution statistics.
+
+**Returns:**
+- Distribution of different key types (string, hash, list, set, zset)
+
+#### `get_redis_config()`
+Get Redis configuration information.
+
+**Returns:**
+- Important Redis configuration parameters
+
+#### `get_redis_overview()`
+Get comprehensive Redis overview (all monitoring information).
+
+**Returns:**
+- Complete system overview including all above information
+
+### MCP Resources
+
+#### `database://config`
+Database configuration information (sensitive data hidden).
+
+**Returns:**
+- Safe configuration details without passwords
+
+#### `database://status`
+Database connection status and health check results.
+
+**Returns:**
+- Connection status, ping results, basic operations test
 
 ## 🏗️ Architecture
 
 ### Project Structure
 ```
-src/
-├── server.py              # MCP server main entry point
-├── utils/                 # Utility modules
-│   ├── db_config.py       # Database configuration management
-│   ├── db_pool.py         # Connection pool management
-│   ├── db_operate.py      # Database operations
-│   ├── logger_util.py     # Logging management
-│   └── __init__.py        # Module initialization
-├── resources/             # MCP resources
-│   └── db_resources.py    # Database resources
-└── tools/                 # MCP tools
-    └── db_tool.py         # Database tools
+redis_mcp_server/
+├── src/
+│   ├── __init__.py              # Package metadata and API
+│   ├── server.py                # Main MCP server entry point
+│   ├── utils/                   # Utility modules
+│   │   ├── __init__.py          # Utility exports
+│   │   ├── db_config.py         # Configuration management
+│   │   ├── db_pool.py           # Connection pool management
+│   │   ├── db_operate.py        # Redis operations wrapper
+│   │   └── logger_util.py       # Logging configuration
+│   ├── resources/               # MCP resources
+│   │   └── db_resources.py      # Database resources provider
+│   └── tools/                   # MCP tools
+│       └── db_tool.py           # Redis management tools
+├── dbconfig.json               # Database configuration
+├── pyproject.toml              # Project configuration
+├── requirements.txt            # Python dependencies
+└── README.md                   # Project documentation
 ```
 
 ### Key Components
 
-#### Database Connection Pool
-- **Singleton Pattern**: Ensures single pool instance
-- **Async Management**: Non-blocking connection handling
-- **Automatic Cleanup**: Connection release and pool management
+#### Connection Pool Manager
+- **Singleton Pattern**: Single pool instance per application
+- **Async Management**: Non-blocking connection handling  
+- **Health Monitoring**: Automatic connection validation
+- **Resource Cleanup**: Proper connection release
 
-#### Configuration Management
-- **JSON-based**: Human-readable configuration format
-- **Environment Override**: Flexible configuration management
-- **Validation**: Required field validation and error handling
+#### Configuration System
+- **JSON-based**: Human-readable configuration
+- **Environment Override**: Flexible deployment options
+- **Multi-instance**: Support for multiple Redis instances
+- **Validation**: Comprehensive error checking
 
 #### Logging System
-- **Unified Interface**: Single logger instance across modules
-- **Configurable Output**: File and console logging
-- **Structured Format**: Timestamp, level, module, function, and line information
+- **Structured Logging**: JSON-formatted log entries
+- **File Rotation**: Automatic log file management
+- **Configurable Levels**: TRACE to CRITICAL
+- **Performance Optimized**: Asynchronous logging
+
+## 🔧 Advanced Configuration
+
+### SSL/TLS Configuration
+
+For secure connections, configure SSL in your `dbconfig.json`:
+
+```json
+{
+  "redisList": [
+    {
+      "redisInstanceId": "secure-redis",
+      "redisHost": "secure.redis.example.com",
+      "redisPort": 6380,
+      "redisSsl": true,
+      "redisPassword": "secure_password",
+      "dbActive": true
+    }
+  ]
+}
+```
+
+### Cluster Configuration
+
+For Redis cluster deployments:
+
+```json
+{
+  "redisList": [
+    {
+      "redisInstanceId": "redis-cluster",
+      "redisType": "cluster",
+      "redisHost": "cluster-node1.example.com",
+      "redisPort": 7000,
+      "redisPassword": "cluster_password",
+      "dbActive": true
+    }
+  ]
+}
+```
+
+### Performance Tuning
+
+Optimize for high-throughput scenarios:
+
+```json
+{
+  "redisPoolSize": 20,
+  "redisMaxConnections": 50,
+  "redisConnectionTimeout": 10,
+  "socketTimeout": 5,
+  "healthCheckInterval": 60
+}
+```
 
 ## 🧪 Testing
 
-### Generate Test Data
+### Basic Connection Test
+
 ```python
-# Generate 100 test records for users table
-await generate_demo_data("users", ["name", "email", "phone"], 100)
+# Test Redis connection
+status = await get_connection_status()
+print(status)  # {'ping': True, 'set_get': 'ok'}
 ```
 
-### Test Database Connection
+### Performance Testing
+
 ```python
-# Test basic SQL execution
-result = await sql_exec("SELECT 1 as test")
-print(result)  # {'success': True, 'result': [{'test': 1}]}
+# Generate test data
+await gen_test_data("users", ["name", "email", "age"], 1000)
+
+# Check database size
+db_info = await get_db_info()
+print(f"Total keys: {db_info['dbsize']}")
 ```
 
 ## 📊 Monitoring
 
-### Database Status
-```python
-# Get database configuration
-config = await get_database_config()
-print(f"Database: {config['dbType']} {config['dbVersion']}")
+### Health Checks
 
-# Get table information
-tables = await get_database_tables()
-print(f"Total tables: {len(tables)}")
+The server provides built-in health monitoring:
+
+```python
+# Get comprehensive overview
+overview = await get_redis_overview()
+
+# Check specific metrics
+memory = await get_memory_info()
+if memory['used_memory'] > threshold:
+    # Handle high memory usage
+    pass
 ```
 
-### Connection Pool Status
-- Pool size and overflow configuration
-- Connection timeout settings
-- Active connection count
+### Log Analysis
+
+Monitor server logs for performance and errors:
+
+```bash
+# View real-time logs
+tail -f /var/log/redis_mcp_server/logs/mcp_server.log
+
+# Search for errors
+grep "ERROR" /var/log/redis_mcp_server/logs/mcp_server.log
+```
 
 ## 🚨 Troubleshooting
 
 ### Common Issues
 
 #### Connection Errors
-```bash
-# Check database connectivity
-mysql -h localhost -P 3306 -u username -p database_name
 
-# Verify configuration
-python -c "from src.utils.db_config import load_db_config; print(load_db_config())"
+**Problem**: `ConnectionError: Connection refused`
+
+**Solution**:
+```bash
+# Check Redis server status
+redis-cli ping
+
+# Verify Redis is running
+systemctl status redis
+
+# Check network connectivity
+telnet localhost 6379
 ```
 
-#### Permission Issues
-- Ensure database user has necessary privileges
-- Check firewall and network access
-- Verify database server is running
+#### Authentication Errors
 
-#### Configuration Errors
-- Validate JSON syntax in `dbconfig.json`
-- Check file permissions
-- Verify environment variables
+**Problem**: `AuthenticationError: Auth failed`
+
+**Solutions**:
+- Verify password in `dbconfig.json`
+- Check Redis AUTH configuration
+- Ensure user has proper permissions
+
+#### Memory Issues
+
+**Problem**: High memory usage or OOM errors
+
+**Solutions**:
+- Monitor with `get_memory_info()`
+- Adjust `maxmemory` policy
+- Implement key expiration
+- Use Redis memory optimization techniques
+
+#### Performance Issues
+
+**Problem**: Slow response times
+
+**Solutions**:
+- Increase connection pool size
+- Reduce connection timeout
+- Monitor with `get_stats_info()`
+- Check network latency
 
 ### Debug Mode
-Set log level to DEBUG in configuration:
+
+Enable debug logging:
+
 ```json
 {
-    "logLevel": "debug"
+  "logLevel": "debug"
 }
+```
+
+### Diagnostic Commands
+
+```python
+# Check server health
+server_info = await get_server_info()
+clients_info = await get_clients_info()
+stats_info = await get_stats_info()
+
+# Analyze key distribution
+key_types = await get_key_types()
+keys_sample = await get_keys_info()
 ```
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+We welcome contributions! Please follow these guidelines:
 
 ### Development Setup
+
 ```bash
-# Install in development mode with all dependencies
+# Clone the repository
+git clone https://github.com/j00131120/mcp_database_server.git
+cd mcp_database_server/redis_mcp_server
+
+# Install development dependencies
 pip install -e ".[dev,test,docs]"
 
-# Run with debug logging
-export LOG_LEVEL=debug
-python src/server.py
+# Install pre-commit hooks
+pre-commit install
 ```
 
-### Code Quality Tools
+### Code Quality
+
 ```bash
 # Format code
 black src/
@@ -380,11 +536,26 @@ pytest
 
 # Run tests with coverage
 pytest --cov=src --cov-report=html
-
-# Pre-commit hooks
-pre-commit install
-pre-commit run --all-files
 ```
+
+### Submitting Changes
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+### Code Style
+
+- Follow PEP 8 guidelines
+- Use type hints for all functions
+- Add docstrings for public methods
+- Write comprehensive tests
+- Update documentation
 
 ## 📄 License
 
@@ -396,56 +567,29 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [FastMCP](https://github.com/fastmcp/fastmcp) - MCP framework
-- [aiomysql](https://github.com/aio-libs/aiomysql) - Async MySQL driver
-- [loguru](https://github.com/Delgan/loguru) - Logging library
+- [FastMCP](https://github.com/fastmcp/fastmcp) - MCP framework foundation
+- [redis-py](https://github.com/redis/redis-py) - Python Redis client
+- [Loguru](https://github.com/Delgan/loguru) - Structured logging library
+- [Redis](https://redis.io/) - In-memory data structure store
 
 ## 📞 Support
 
-For support and questions:
-- Create an issue in the repository
-- Contact: [j00131120@163.com](mailto:j00131120@163.com)
+- **Issues**: [GitHub Issues](https://github.com/j00131120/mcp_database_server/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/j00131120/mcp_database_server/discussions)
+- **Email**: [j00131120@163.com](mailto:j00131120@163.com)
 
-## 🔄 Changelog
+## 🔄 Version History
 
 ### v1.0.0
 - Initial release
-- MCP protocol support
-- Multi-database compatibility
-- Async connection pooling
+- Full MCP protocol support
+- Redis connection pooling
+- Comprehensive monitoring tools
 - Security features implementation
+- Production-ready deployment
 
-## 📦 Building and Distribution
+---
 
-### Build the Package
-```bash
-# Clean and build
-python build.py build
-
-# Build and check
-python build.py check
-
-# Build and test installation
-python build.py test
-
-# Complete build process
-python build.py all
-```
-
-### Publish to PyPI
-```bash
-# Build, test, and publish
-python build.py publish
-
-# Or manually
-python -m build
-python -m twine check dist/*
-python -m twine upload dist/*
-```
-
-### Package Information
-- **Package Name**: `mysql-server-mcp`
-- **Entry Point**: `mysql-mcp-server`
-- **MCP Server Entry Point**: `mysql`
-- **Python Version**: >= 3.12
-- **License**: MIT
+<p align="center">
+  <strong>Built with ❤️ for the Redis and MCP communities</strong>
+</p>

@@ -10,7 +10,7 @@ from src.utils.db_config import load_activate_redis_config
 
 
 class RedisPool:
-    """Redis连接池管理类"""
+    """Redis connection pool management class"""
 
     _instance = None
     _pool = None
@@ -19,23 +19,23 @@ class RedisPool:
 
     @classmethod
     async def get_instance(cls):
-        """获取单例实例"""
+        """Get singleton instance"""
         if cls._instance is None:
             cls._instance = RedisPool()
             await cls._instance._initialize()
         return cls._instance
 
     async def _initialize(self):
-        """初始化连接池"""
+        """Initialize connection pool"""
         if self._pool is not None:
             return
 
-        # 获取活跃的Redis实例和配置
+        # Get active Redis instance and configuration
         redis_instance, redis_config = load_activate_redis_config()
         self._config = redis_config
 
         try:
-            # 准备连接池参数
+            # Prepare connection pool parameters
             pool_kwargs = {
                 'host': redis_instance.redis_host,
                 'port': redis_instance.redis_port,
@@ -48,41 +48,41 @@ class RedisPool:
                 'retry_on_timeout': redis_config.retry_on_timeout
             }
 
-            # 只有在密码存在时才添加密码参数
+            # Only add password parameter when password exists
             if redis_instance.redis_password:
                 pool_kwargs['password'] = redis_instance.redis_password
 
-            # 只有在启用SSL时才添加SSL参数
+            # Only add SSL parameters when SSL is enabled
             if redis_instance.redis_ssl:
                 pool_kwargs['ssl'] = True
                 pool_kwargs['ssl_check_hostname'] = False
                 pool_kwargs['ssl_cert_reqs'] = None
 
-            # 创建连接池
+            # Create connection pool
             self._pool = redis.ConnectionPool(**pool_kwargs)
 
-            # 创建Redis客户端
+            # Create Redis client
             self._redis = redis.Redis(connection_pool=self._pool)
 
-            # 测试连接
+            # Test connection
             await self._redis.ping()
 
-            logger.info(f"Redis连接池初始化成功")
-            logger.info(f"  实例: {redis_instance.redis_instance_id}")
-            logger.info(f"  地址: {redis_instance.redis_host}:{redis_instance.redis_port}")
-            logger.info(f"  数据库: {redis_instance.redis_database}")
-            logger.info(f"  最大连接数: {redis_config.redis_max_connections}")
+            logger.info(f"Redis connection pool initialized successfully")
+            logger.info(f"  Instance: {redis_instance.redis_instance_id}")
+            logger.info(f"  Address: {redis_instance.redis_host}:{redis_instance.redis_port}")
+            logger.info(f"  Database: {redis_instance.redis_database}")
+            logger.info(f"  Max connections: {redis_config.redis_max_connections}")
 
         except Exception as e:
-            logger.error(f"Redis连接池初始化失败: {str(e)}")
+            logger.error(f"Redis connection pool initialization failed: {str(e)}")
             raise
 
     async def get_redis(self) -> redis.Redis:
         """
-        获取Redis客户端实例
+        Get Redis client instance
 
         Returns:
-            redis.Redis: Redis客户端实例
+            redis.Redis: Redis client instance
         """
         if self._redis is None:
             await self._initialize()
@@ -90,71 +90,71 @@ class RedisPool:
 
     async def health_check(self) -> bool:
         """
-        执行健康检查
+        Perform health check
 
         Returns:
-            bool: 连接是否健康
+            bool: Whether the connection is healthy
         """
         try:
             if self._redis is None:
                 return False
 
-            # 执行ping命令检查连接
+            # Execute ping command to check connection
             result = await self._redis.ping()
             if result:
-                logger.debug("Redis健康检查通过")
+                logger.debug("Redis health check passed")
                 return True
             else:
-                logger.warning("Redis健康检查失败: ping返回False")
+                logger.warning("Redis health check failed: ping returned False")
                 return False
 
         except Exception as e:
-            logger.error(f"Redis健康检查失败: {str(e)}")
+            logger.error(f"Redis health check failed: {str(e)}")
             return False
 
     async def close_pool(self):
-        """关闭连接池"""
+        """Close connection pool"""
         if self._pool is None:
-            logger.warning("Redis连接池不存在，无需关闭")
+            logger.warning("Redis connection pool does not exist, no need to close")
             return
 
         try:
-            # 关闭Redis客户端
+            # Close Redis client
             if self._redis:
                 await self._redis.aclose()
                 self._redis = None
 
-            # 断开连接池
+            # Disconnect connection pool
             await self._pool.aclose()
             self._pool = None
 
-            logger.info("Redis连接池已关闭")
+            logger.info("Redis connection pool closed")
 
         except Exception as e:
-            logger.error(f"关闭Redis连接池失败: {str(e)}")
+            logger.error(f"Failed to close Redis connection pool: {str(e)}")
 
 
-# 导出连接池获取函数
+# Export connection pool retrieval function
 async def get_redis_pool():
-    """获取Redis连接池实例"""
+    """Get Redis connection pool instance"""
     return await RedisPool.get_instance()
 
 
 if __name__ == "__main__":
-    # 测试连接池
+    # Test connection pool
     async def test_pool():
         redis_pool = await get_redis_pool()
         redis_client = await redis_pool.get_redis()
 
-        # 测试基本操作
+        # Test basic operations
         await redis_client.set("test_key", "test_value")
         value = await redis_client.get("test_key")
-        logger.info(f"测试结果: {value}")
+        logger.info(f"Test result: {value}")
 
-        # 清理测试数据
+        # Clean up test data
         await redis_client.delete("test_key")
 
-        # 关闭连接池
+        # Close connection pool
         await redis_pool.close_pool()
 
 

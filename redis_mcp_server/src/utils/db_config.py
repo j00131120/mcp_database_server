@@ -13,7 +13,7 @@ from .logger_util import logger, db_config_path
 
 @dataclass
 class RedisInstance:
-    """Redis实例配置"""
+    """Redis instance configuration"""
     redis_instance_id: str
     redis_type: str
     redis_host: str
@@ -27,7 +27,7 @@ class RedisInstance:
 
 @dataclass
 class DatabaseConfig:
-    """数据库配置，包含连接池设置和Redis实例列表"""
+    """Database configuration, including connection pool settings and Redis instance list"""
     redis_encoding: str
     redis_pool_size: int
     redis_max_connections: int
@@ -39,17 +39,17 @@ class DatabaseConfig:
 
 
 class DatabaseConfigLoader:
-    """数据库配置加载器，从JSON文件加载配置 - 单例模式"""
+    """Database configuration loader, load configuration from JSON file - singleton pattern"""
 
     _instance = None
     _initialized = False
 
     def __new__(cls):
         """
-        单例模式实现
+        Singleton pattern implementation
 
         Returns:
-            DatabaseConfigLoader: 单例实例
+            DatabaseConfigLoader: Singleton instance
         """
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -57,49 +57,49 @@ class DatabaseConfigLoader:
 
     def __init__(self):
         """
-        初始化配置加载器（仅在第一次创建实例时执行）
+        Initialize configuration loader (only executed when creating instance for the first time)
         """
         if not self._initialized:
             self.config_json_file = db_config_path
             self._config: Optional[DatabaseConfig] = None
             self._initialized = True
-            logger.info(f"数据库配置加载器已初始化，配置文件: {self.config_json_file}")
+            logger.info(f"Database configuration loader initialized, configuration file: {self.config_json_file}")
 
     def load_config(self) -> DatabaseConfig:
         """
-        从JSON文件加载数据库配置
+        Load database configuration from JSON file
 
         Returns:
-            DatabaseConfig: 加载的配置对象
+            DatabaseConfig: Loaded configuration object
 
         Raises:
-            FileNotFoundError: 配置文件不存在
-            json.JSONDecodeError: JSON格式无效
-            KeyError: 缺少必需的配置键
+            FileNotFoundError: Configuration file does not exist
+            json.JSONDecodeError: Invalid JSON format
+            KeyError: Missing required configuration keys
         """
         if not os.path.exists(self.config_json_file):
-            error_msg = f"数据库配置文件未找到: {self.config_json_file}"
+            error_msg = f"Database configuration file not found: {self.config_json_file}"
             logger.error(error_msg)
             raise FileNotFoundError(error_msg)
 
         try:
             with open(self.config_json_file, 'r', encoding='utf-8') as f:
                 config_data = json.load(f)
-            logger.info(f"成功读取数据库配置文件: {self.config_json_file}")
+            logger.info(f"Successfully read database configuration file: {self.config_json_file}")
         except json.JSONDecodeError as e:
-            error_msg = f"数据库配置文件JSON格式错误: {e}"
+            error_msg = f"Database configuration file JSON format error: {e}")
             logger.error(error_msg)
             raise json.JSONDecodeError(error_msg, e.doc, e.pos)
 
-        # 验证必需的键
+        # Validate required keys
         required_keys = ['redisPoolSize', 'redisMaxConnections', 'redisConnectionTimeout', 'redisList']
         for key in required_keys:
             if key not in config_data:
-                error_msg = f"缺少必需的数据库配置键: {key}"
+                error_msg = f"Missing required database configuration key: {key}"
                 logger.error(error_msg)
                 raise KeyError(error_msg)
 
-        # 解析Redis实例
+        # Parse Redis instances
         redis_instances = []
         for redis_data in config_data['redisList']:
             required_redis_keys = [
@@ -108,7 +108,7 @@ class DatabaseConfigLoader:
             ]
             for key in required_redis_keys:
                 if key not in redis_data:
-                    error_msg = f"缺少必需的Redis实例配置键: {key}"
+                    error_msg = f"Missing required Redis instance configuration key: {key}"
                     logger.error(error_msg)
                     raise KeyError(error_msg)
 
@@ -119,15 +119,15 @@ class DatabaseConfigLoader:
                 redis_port=redis_data['redisPort'],
                 redis_database=redis_data['redisDatabase'],
                 redis_password=redis_data.get('redisPassword'),
-                redis_active=redis_data['dbActive'],  # 使用dbActive字段
+                redis_active=redis_data['dbActive'],  # Use dbActive field
                 redis_ssl=redis_data.get('redisSsl', False),
                 redis_decode_responses=redis_data.get('redisDecodeResponses', True)
             )
             redis_instances.append(redis_instance)
             logger.info(
-                f"解析Redis实例: {redis_instance.redis_instance_id} ({redis_instance.redis_host}:{redis_instance.redis_port})")
+                f"Parsed Redis instance: {redis_instance.redis_instance_id} ({redis_instance.redis_host}:{redis_instance.redis_port})")
 
-        # 创建配置对象
+        # Create configuration object
         self._config = DatabaseConfig(
             redis_encoding=config_data.get('redisEncoding', 'utf-8'),
             redis_pool_size=config_data['redisPoolSize'],
@@ -139,15 +139,15 @@ class DatabaseConfigLoader:
             redis_instances_list=redis_instances
         )
 
-        logger.info(f"数据库配置加载完成，共 {len(redis_instances)} 个Redis实例")
+        logger.info(f"Database configuration loading completed, {len(redis_instances)} Redis instances in total")
         return self._config
 
     def get_config(self) -> DatabaseConfig:
         """
-        获取加载的配置，如果未加载则自动加载
+        Get loaded configuration, automatically load if not loaded
 
         Returns:
-            DatabaseConfig: 配置对象
+            DatabaseConfig: Configuration object
         """
         if self._config is None:
             return self.load_config()
@@ -155,26 +155,26 @@ class DatabaseConfigLoader:
 
     def get_active_redis(self) -> Optional[RedisInstance]:
         """
-        获取第一个活跃的Redis实例
+        Get the first active Redis instance
 
         Returns:
-            Optional[RedisInstance]: 第一个活跃的Redis实例，如果没有活跃实例则返回None
+            Optional[RedisInstance]: First active Redis instance, return None if no active instance
         """
         config = self.get_config()
         for redis in config.redis_instances_list:
             if redis.redis_active:
-                logger.info(f"找到第一个活跃Redis实例: {redis.redis_instance_id}")
+                logger.info(f"Found first active Redis instance: {redis.redis_instance_id}")
                 return redis
-        logger.warning("没有找到活跃的Redis实例")
+        logger.warning("No active Redis instance found")
         return None
 
 
 def load_db_config() -> DatabaseConfig:
     """
-    加载数据库配置的便利函数
+    Convenience function to load database configuration
 
     Returns:
-        DatabaseConfig: 加载的配置对象
+        DatabaseConfig: Loaded configuration object
     """
     loader = DatabaseConfigLoader()
     return loader.load_config()
@@ -182,55 +182,55 @@ def load_db_config() -> DatabaseConfig:
 
 def load_active_redis_config() -> tuple[RedisInstance, DatabaseConfig]:
     """
-    加载数据库配置和活跃的Redis实例的便利函数
+    Convenience function to load database configuration and active Redis instance
 
     Returns:
-        tuple[RedisInstance, DatabaseConfig]: 活跃的Redis实例和配置对象的元组
+        tuple[RedisInstance, DatabaseConfig]: Tuple of active Redis instance and configuration object
     """
     loader = DatabaseConfigLoader()
     config = loader.get_config()
     active_redis = loader.get_active_redis()
     if active_redis is None:
-        raise ValueError("没有找到活跃的Redis实例")
+        raise ValueError("No active Redis instance found")
     return active_redis, config
 
 
-# 为了向后兼容，保留原有的函数名
+# For backward compatibility, keep original function names
 def load_redis_config() -> DatabaseConfig:
     """
-    加载Redis配置的便利函数（向后兼容）
+    Convenience function to load Redis configuration (backward compatible)
 
     Returns:
-        DatabaseConfig: 加载的配置对象
+        DatabaseConfig: Loaded configuration object
     """
     return load_db_config()
 
 
 def load_activate_redis_config() -> tuple[RedisInstance, DatabaseConfig]:
     """
-    加载Redis配置和活跃的Redis实例的便利函数（向后兼容）
+    Convenience function to load Redis configuration and active Redis instance (backward compatible)
 
     Returns:
-        tuple[RedisInstance, DatabaseConfig]: 活跃的Redis实例和配置对象的元组
+        tuple[RedisInstance, DatabaseConfig]: Tuple of active Redis instance and configuration object
     """
     return load_active_redis_config()
 
 
-# 示例用法
+# Example usage
 if __name__ == "__main__":
-    # 加载配置
+    # Load configuration
     active_redis, db_config = load_active_redis_config()
-    logger.info(f"Redis编码: {db_config.redis_encoding}")
-    logger.info(f"Redis连接池大小: {db_config.redis_pool_size}")
-    logger.info(f"Redis最大连接数: {db_config.redis_max_connections}")
-    logger.info(f"Redis连接超时时间: {db_config.redis_connection_timeout}")
-    logger.info(f"Socket超时时间: {db_config.socket_timeout}")
-    logger.info(f"超时重试: {db_config.retry_on_timeout}")
-    logger.info(f"健康检查间隔: {db_config.health_check_interval}")
+    logger.info(f"Redis encoding: {db_config.redis_encoding}")
+    logger.info(f"Redis connection pool size: {db_config.redis_pool_size}")
+    logger.info(f"Redis max connections: {db_config.redis_max_connections}")
+    logger.info(f"Redis connection timeout: {db_config.redis_connection_timeout}")
+    logger.info(f"Socket timeout: {db_config.socket_timeout}")
+    logger.info(f"Retry on timeout: {db_config.retry_on_timeout}")
+    logger.info(f"Health check interval: {db_config.health_check_interval}")
 
-    # 显示活跃Redis信息
-    logger.info(f"\n活跃Redis实例: {active_redis.redis_instance_id}")
-    logger.info(f"  主机: {active_redis.redis_host}:{active_redis.redis_port}")
-    logger.info(f"  数据库: {active_redis.redis_database}")
-    logger.info(f"  类型: {active_redis.redis_type}")
-    logger.info(f"  密码: {'已设置' if active_redis.redis_password else '未设置'}")
+    # Display active Redis information
+    logger.info(f"\nActive Redis instance: {active_redis.redis_instance_id}")
+    logger.info(f"  Host: {active_redis.redis_host}:{active_redis.redis_port}")
+    logger.info(f"  Database: {active_redis.redis_database}")
+    logger.info(f"  Type: {active_redis.redis_type}")
+    logger.info(f"  Password: {'Set' if active_redis.redis_password else 'Not set'}")

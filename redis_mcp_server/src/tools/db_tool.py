@@ -9,23 +9,23 @@ import random, string
 
 
 async def generate_test_data(table, columns, num):
-    """生成Redis测试数据"""
+    """Generate Redis test data"""
     logger.info(f"Starting to generate {num} test records for Redis table '{table}'")
     logger.debug(f"Target {table} columns: {columns}")
 
     for i in range(num):
-        # 生成记录ID
+        # Generate record ID
         record_id = str(i + 1)
         key = f"table:{table}:{record_id}"
 
-        # 生成字段数据
+        # Generate field data
         record_data = {}
         for col in columns:
-            # 简单示例：全部用8位随机字符串
+            # Simple example: all use 8-character random strings
             random_value = ''.join(random.choices(string.ascii_letters, k=8))
             record_data[col] = random_value
 
-        # 使用Redis HSET命令存储记录
+        # Use Redis HSET command to store records
         await execute_command("HSET", key, mapping=record_data)
 
         logger.debug(f"Inserting row {i + 1}/{num}: {record_data}")
@@ -34,64 +34,64 @@ async def generate_test_data(table, columns, num):
 
 
 async def get_redis_server_info():
-    """获取Redis服务器基本信息"""
-    logger.info("=== Redis服务器信息 ===")
+    """Get Redis server basic information"""
+    logger.info("=== Redis Server Information ===")
 
     try:
-        # 获取服务器信息
+        # Get server information
         info = await execute_command('INFO', 'server')
-        logger.info("服务器信息:")
+        logger.info("Server information:")
         for key, value in info.items():
             if key in ['redis_version', 'redis_mode', 'os', 'arch_bits', 'uptime_in_seconds', 'uptime_in_days']:
                 logger.info(f"  {key}: {value}")
 
         return info
     except Exception as e:
-        logger.error(f"获取服务器信息失败: {e}")
+        logger.error(f"Failed to get server information: {e}")
         return {}
 
 
 async def get_redis_memory_info():
-    """获取Redis内存使用信息"""
-    logger.info("=== Redis内存信息 ===")
+    """Get Redis memory usage information"""
+    logger.info("=== Redis Memory Information ===")
 
     try:
         info = await execute_command('INFO', 'memory')
-        logger.info("内存使用情况:")
+        logger.info("Memory usage:")
         for key, value in info.items():
             if key in ['used_memory_human', 'used_memory_peak_human', 'used_memory_rss_human', 'maxmemory_human']:
                 logger.info(f"  {key}: {value}")
 
         return info
     except Exception as e:
-        logger.error(f"获取内存信息失败: {e}")
+        logger.error(f"Failed to get memory information: {e}")
         return {}
 
 
 async def get_redis_clients_info():
-    """获取Redis客户端连接信息"""
-    logger.info("=== Redis客户端信息 ===")
+    """Get Redis client connection information"""
+    logger.info("=== Redis Client Information ===")
 
     try:
         info = await execute_command('INFO', 'clients')
-        logger.info("客户端连接情况:")
+        logger.info("Client connections:")
         for key, value in info.items():
             if key in ['connected_clients', 'client_recent_max_input_buffer', 'client_recent_max_output_buffer']:
                 logger.info(f"  {key}: {value}")
 
         return info
     except Exception as e:
-        logger.error(f"获取客户端信息失败: {e}")
+        logger.error(f"Failed to get client information: {e}")
         return {}
 
 
 async def get_redis_stats_info():
-    """获取Redis统计信息"""
-    logger.info("=== Redis统计信息 ===")
+    """Get Redis statistics information"""
+    logger.info("=== Redis Statistics Information ===")
 
     try:
         info = await execute_command('INFO', 'stats')
-        logger.info("操作统计:")
+        logger.info("Operation statistics:")
         for key, value in info.items():
             if key in ['total_connections_received', 'total_commands_processed', 'instantaneous_ops_per_sec',
                        'keyspace_hits', 'keyspace_misses']:
@@ -99,61 +99,61 @@ async def get_redis_stats_info():
 
         return info
     except Exception as e:
-        logger.error(f"获取统计信息失败: {e}")
+        logger.error(f"Failed to get statistics information: {e}")
         return {}
 
 
 async def get_database_info():
-    """获取数据库信息"""
-    logger.info("=== 数据库信息 ===")
+    """Get database information"""
+    logger.info("=== Database Information ===")
 
     try:
-        # 获取当前数据库大小
+        # Get current database size
         dbsize = await execute_command('DBSIZE')
-        logger.info(f"当前数据库键数量: {dbsize}")
+        logger.info(f"Current database key count: {dbsize}")
 
-        # 获取数据库键空间信息
+        # Get database keyspace information
         info = await execute_command('INFO', 'keyspace')
-        logger.info("键空间信息:")
+        logger.info("Keyspace information:")
         for key, value in info.items():
             if key.startswith('db'):
                 logger.info(f"  {key}: {value}")
 
         return {"dbsize": dbsize, "keyspace": info}
     except Exception as e:
-        logger.error(f"获取数据库信息失败: {e}")
+        logger.error(f"Failed to get database information: {e}")
         return {}
 
 
 async def get_keys_sample():
-    """获取键样本信息"""
-    logger.info("=== 键样本信息 ===")
+    """Get key sample information"""
+    logger.info("=== Key Sample Information ===")
 
     try:
-        # 获取所有键（注意：在生产环境中要小心使用KEYS *）
+        # Get all keys (Note: use KEYS * carefully in production environment)
         all_keys = await execute_command('KEYS', '*')
         total_keys = len(all_keys)
-        logger.info(f"总键数: {total_keys}")
+        logger.info(f"Total keys: {total_keys}")
 
         if total_keys > 0:
-            # 显示前10个键作为样本
+            # Display first 10 keys as sample
             sample_keys = all_keys[:10]
-            logger.info("键样本（前10个）:")
+            logger.info("Key samples (first 10):")
             for i, key in enumerate(sample_keys, 1):
                 key_type = await execute_command('TYPE', key)
                 ttl = await execute_command('TTL', key)
-                ttl_info = f"TTL: {ttl}s" if ttl > 0 else "无过期时间" if ttl == -1 else "已过期"
-                logger.info(f"  {i}. {key} (类型: {key_type}, {ttl_info})")
+                ttl_info = f"TTL: {ttl}s" if ttl > 0 else "No expiration" if ttl == -1 else "Expired"
+                logger.info(f"  {i}. {key} (Type: {key_type}, {ttl_info})")
 
         return {"total_keys": total_keys, "sample_keys": all_keys[:10]}
     except Exception as e:
-        logger.error(f"获取键信息失败: {e}")
+        logger.error(f"Failed to get key information: {e}")
         return {}
 
 
 async def get_key_types_distribution():
-    """获取键类型分布"""
-    logger.info("=== 键类型分布 ===")
+    """Get key type distribution"""
+    logger.info("=== Key Type Distribution ===")
 
     try:
         all_keys = await execute_command('KEYS', '*')
@@ -163,22 +163,22 @@ async def get_key_types_distribution():
             key_type = await execute_command('TYPE', key)
             type_count[key_type] = type_count.get(key_type, 0) + 1
 
-        logger.info("键类型分布:")
+        logger.info("Key type distribution:")
         for key_type, count in type_count.items():
             logger.info(f"  {key_type}: {count}")
 
         return type_count
     except Exception as e:
-        logger.error(f"获取键类型分布失败: {e}")
+        logger.error(f"Failed to get key type distribution: {e}")
         return {}
 
 
 async def get_config_info():
-    """获取Redis配置信息"""
-    logger.info("=== Redis配置信息 ===")
+    """Get Redis configuration information"""
+    logger.info("=== Redis Configuration Information ===")
 
     try:
-        # 获取一些重要的配置项
+        # Get some important configuration items
         important_configs = [
             'maxmemory', 'maxmemory-policy', 'timeout', 'databases',
             'save', 'appendonly', 'appendfsync'
@@ -192,9 +192,9 @@ async def get_config_info():
                     config_info[config_key] = config_value[1]
                     logger.info(f"  {config_key}: {config_value[1]}")
             except Exception as e:
-                logger.debug(f"获取配置 {config_key} 失败: {e}")
+                logger.debug(f"Failed to get configuration {config_key}: {e}")
 
         return config_info
     except Exception as e:
-        logger.error(f"获取配置信息失败: {e}")
+        logger.error(f"Failed to get configuration information: {e}")
         return {}
