@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mysql-mcp-server3"
-version = "1.0.3"
+version = "1.0.5"
 description = "A Model Context Protocol (MCP) server that enables secure interaction with MySQL/MariaDB/TiDB/AWS OceanBase/RDS/Aurora MySQL DataBases."
 readme = "README.md"
 license = "MIT"
