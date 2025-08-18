@@ -1,0 +1,35 @@
+{
+    "dbType-Comment": "mysql_db  数据库类型枚举值 mysql/xesql/ubisql/rasesql/oceanbase",
+    "dbList": [
+        {   "dbInstanceId": "mylocalmysql",
+            "dbHost": "localhost",
+            "dbPort": 3306,
+            "dbDatabase": "test",
+            "dbUsername": "root",
+            "dbPassword": "123456",
+            "dbType": "mysql",
+            "dbActive": true
+        },
+        {   "dbInstanceId": "111111",
+            "dbHost": "11111",
+            "dbPort": 3306,
+            "dbDatabase": "mysql_db",
+            "dbUsername": "root",
+            "dbPassword": "123456",
+             "dbType": "mysql",
+            "dbActive": false
+        },
+        {   "dbInstanceId": "22222",
+            "dbHost": "2222",
+            "dbPort": 3306,
+            "dbDatabase": "mysql_db",
+            "dbUsername": "root",
+            "dbPassword": "123456",
+            "dbType": "rasesql",
+            "dbActive": false
+        }
+    ],
+    "multiDBServeraa": "http://localhost:8080/mcp/executeQuery",
+    "multiDBServer": "http://192.168.43.235:8080/mcp/executeQuery",
+    "logPath": "/Volumes/store/020_pingan_project/005_mcp"
+}
