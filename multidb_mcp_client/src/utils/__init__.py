@@ -1,7 +1,7 @@
 """
-实用工具模块
+Utilities Module
 
-该模块包含数据库配置、HTTP操作、日志记录和数据库操作的实用函数和类。
+This module contains utility functions and classes for database configuration, HTTP operations, logging, and database operations.
 """
 
 from .logger_util import logger
@@ -16,20 +16,20 @@ from .db_operate import execute_sql
 from .http_util import http_get, http_post
 
 __all__ = [
-    # 日志记录器
+    # Logger
     "logger",
     
-    # 数据库配置
+    # Database configuration
     "DatabaseInstance",
     "DatabaseInstanceConfig", 
     "DatabaseInstanceConfigLoader",
     "load_db_config",
     "load_activate_db_config",
     
-    # 数据库操作
+    # Database operations
     "execute_sql",
     
-    # HTTP工具
+    # HTTP utilities
     "http_get",
     "http_post"
 ]

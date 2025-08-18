@@ -1,7 +1,7 @@
 """
-HTTP工具模块
+HTTP Utility Module
 
-提供异步HTTP GET和POST请求函数。
+Provides asynchronous HTTP GET and POST request functions.
 """
 
 import asyncio
@@ -13,28 +13,28 @@ from .logger_util import logger
 
 async def http_get(url: str, headers: Optional[Dict[str, str]] = None, params: Optional[Dict[str, str]] = None) -> Dict:
     """
-    异步执行HTTP GET请求
+    Asynchronously execute HTTP GET request
     """
-    logger.info(f"执行GET请求到 {url}，参数: {params}")
+    logger.info(f"Executing GET request to {url}, params: {params}")
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, params=params) as response:
                 response.raise_for_status()
                 return await response.json()
     except Exception as e:
-        logger.error(f"GET请求失败: {e}")
+        logger.error(f"GET request failed: {e}")
         raise
 
 async def http_post(url: str, headers: Optional[Dict[str, str]] = None, data: Optional[Dict] = None) -> Dict:
     """
-    异步执行HTTP POST请求
+    Asynchronously execute HTTP POST request
     """
-    logger.info(f"执行POST请求到 {url}，数据: {data}")
+    logger.info(f"Executing POST request to {url}, data: {data}")
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, headers=headers, json=data) as response:
                 response.raise_for_status()
                 return await response.json()
     except Exception as e:
-        logger.error(f"POST请求失败: {e}")
+        logger.error(f"POST request failed: {e}")
         raise

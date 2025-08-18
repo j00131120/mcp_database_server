@@ -57,11 +57,7 @@ async def sql_exec(sql: str):
         else:
             logger.info(f"SQL execution successful, affected {result} rows")
 
-        return {
-            "success": True,
-            "result": result,
-            "message": "SQL executed successfully"
-        }
+        return result
     except Exception as e:
         error_msg = str(e)
         logger.error(f"MCP tool SQL execution failed: {error_msg}")
@@ -175,13 +171,7 @@ async def get_database_tables():
     """
     logger.info("Getting database table information")
     # Get all table names
-    tables_info = await generate_database_tables()
-
-    return {
-        "uri": "database://tables",
-        "mimeType": "application/json",
-        "text": str(tables_info)
-    }
+    return await generate_database_tables()
 
 
 @mcp.resource("database://config")
@@ -233,7 +223,7 @@ async def get_database_config():
     """
     logger.info("Getting database configuration information")
 
-    safe_config = await generate_database_config()
+    safe_config = generate_database_config()
 
     return {
         "uri": "database://config",
@@ -253,7 +243,7 @@ def main():
     logger.info(f"Current project path:{project_path}")
     logger.info("Xesql/Mysql/Ubisql DataSource MCP Client client is ready to accept connections")
 
-    active_db, db_config = load_activate_db_config()
+    active_db, _ = load_activate_db_config()
     logger.info(f"Current database instance configuration: {active_db}")
     # When using fastmcp run, just call mcp.run() directly
     mcp.run(transport='stdio')

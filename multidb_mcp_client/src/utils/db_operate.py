@@ -1,7 +1,7 @@
 """
-数据库操作模块
+Database Operations Module
 
-提供支持HTTP代理的数据库操作函数。
+Provides database operation functions with HTTP proxy support.
 """
 
 import json
@@ -12,15 +12,15 @@ from .http_util import http_post
 from .logger_util import logger
 
 async def execute_sql(sql: str, params: Optional[Dict] = None) -> Any:
-    """执行SQL语句（异步版本，使用远程HTTP调用）"""
+    """Execute SQL statement (asynchronous version, using remote HTTP call)"""
 
-    # 加载活跃数据库配置
+    # Load active database configuration
     active_db, config = load_activate_db_config()
 
-    # 远程服务器的API端点
+    # Remote server API endpoint
     url = config.multidb_server
 
-    # 准备请求数据，将数据库实例转换为字典
+    # Prepare request data and convert the database instance to a dictionary
     active_db_dict = {
         "dbInstanceId": active_db.db_instance_id,
         "dbHost": active_db.db_host,
@@ -39,12 +39,12 @@ async def execute_sql(sql: str, params: Optional[Dict] = None) -> Any:
     }
 
     json_str=json.dumps(data, indent=4)
-    logger.debug(f"准备通过HTTP POST执行远程SQL到 {url}，数据: {json_str}")
+    logger.debug(f"Preparing to execute remote SQL via HTTP POST to {url}, data: {json_str}")
 
     try:
         response = await http_post(url, data=data)
-        logger.info(f"远程SQL执行成功，结果: {response}")
+        logger.info(f"Remote SQL executed successfully, result: {response}")
         return response.get("result", [])
     except Exception as e:
-        logger.error(f"远程SQL执行失败: {e}")
+        logger.error(f"Remote SQL execution failed: {e}")
         raise

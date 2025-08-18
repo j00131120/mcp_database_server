@@ -6,18 +6,18 @@ from src.utils.logger_util import logger
 async def generate_database_tables():
     try:
         # Get all table names
-        tables_result = execute_sql("SHOW TABLES")
+        tables_result = await execute_sql("SHOW TABLES")
         tables_info = []
 
         for table_row in tables_result:
             table_name = list(table_row.values())[0]  # Get table name
 
             # Get table structure
-            describe_result = execute_sql(f"DESCRIBE {table_name}")
+            describe_result = await execute_sql(f"DESCRIBE {table_name}")
 
             # Get table record count
-            count_result = execute_sql(f"SELECT COUNT(*) as count FROM {table_name}")
-            record_count = count_result[0]['count'] if count_result else 0
+            count_result = await execute_sql(f"SELECT COUNT(*) as count FROM {table_name}")
+            record_count = count_result[0]['count'] if isinstance(count_result, list) and count_result else 0
 
             tables_info.append({
                 "name": table_name,
@@ -26,20 +26,13 @@ async def generate_database_tables():
             })
 
         logger.info(f"Successfully obtained information for {len(tables_info)} tables")
-        return {
-            "uri": "database://tables",
-            "mimeType": "application/json",
-            "text": str(tables_info)
-        }
+        # Return pure data; outer resource wrapper is added by server.get_database_tables
+        return tables_info
     except Exception as e:
         logger.error(f"Failed to get database table information: {e}")
-        return {
-            "uri": "database://tables",
-            "mimeType": "application/json",
-            "text": f"Error: {str(e)}"
-        }
+        return {"error": str(e)}
 
-async def generate_database_config():
+def generate_database_config():
 
     active_db, db_config = load_activate_db_config()
 
