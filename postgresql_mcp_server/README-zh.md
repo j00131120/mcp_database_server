@@ -182,24 +182,24 @@ cd mysql_mcp_server
 {
   "mcpServers": {
     "postgresql-mcp-client": {
-      "command": "uv",
-      "args": [
-        "run",
-        "src/server.py"
-      ],
-      "cwd": "/Volumes/store/postgresql_mcp_server",  //项目绝对路径
+      "command": "/bin/uv",
+      "args": ["run", "src/server.py"],
+      "cwd": "/path/to/your/project",
       "env": {
-        "config_file": "/Volumes/store/dbconfig.json"
+        "config_file": "/path/to/your/dbconfig.json"
       },
       "disabled": false,
-      "autoApprove": [
-        "describe_table",
-        "sql_exec",
-        "generate_demo_data"
-      ]
+      "autoApprove": ["describe_table", "sql_exec", "generate_demo_data"]
     }
   }
 }
+
+# command
+uv absolute path
+# cwd
+project absolute path
+# config_file
+dbconfig.json file path
 ```
 
 ### 3. 启动服务器
@@ -224,6 +224,10 @@ python src/server.py
 uv run src/server.py
 ```
 
+#### 使用 fastmcp调试
+```bash
+fastmcp dev src/server.py
+```
 ### 4. 验证安装
 
 ```bash

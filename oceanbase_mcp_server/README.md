@@ -101,24 +101,24 @@ cd mcp_database_server/oceanbase_mcp_server
 {
   "mcpServers": {
     "oceanbase-mcp-client": {
-      "command": "uv",
-      "args": [
-        "run",
-        "src/server.py"
-      ],
-      "cwd": "/Volumes/store/oceanbase_mcp_server",  //project absolute path
+      "command": "/bin/uv",
+      "args": ["run", "src/server.py"],
+      "cwd": "/path/to/your/project",
       "env": {
-        "config_file": "/Volumes/store/dbconfig.json"
+        "config_file": "/path/to/your/dbconfig.json"
       },
       "disabled": false,
-      "autoApprove": [
-        "describe_table",
-        "sql_exec",
-        "generate_demo_data"
-      ]
+      "autoApprove": ["describe_table", "sql_exec", "generate_demo_data"]
     }
   }
 }
+
+# command
+uv absolute path
+# cwd
+project absolute path
+# config_file
+dbconfig.json file path
 ```
 
 ## 🚀 Quick Start
@@ -136,6 +136,9 @@ uv run src/server.py
 
 # Or directly with Python
 python src/server.py
+
+# Using fastmcp debug
+fastmcp dev src/server.py
 ```
 
 ### Using with MCP Clients

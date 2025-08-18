@@ -182,24 +182,24 @@ import current project into your IDE Tool
 {
   "mcpServers": {
     "postgresql-mcp-client": {
-      "command": "uv",
-      "args": [
-        "run",
-        "src/server.py"
-      ],
-      "cwd": "/Volumes/store/postgresql_mcp_server",  //project absolute path
+      "command": "/bin/uv",
+      "args": ["run", "src/server.py"],
+      "cwd": "/path/to/your/project",
       "env": {
-        "config_file": "/Volumes/store/dbconfig.json"
+        "config_file": "/path/to/your/dbconfig.json"
       },
       "disabled": false,
-      "autoApprove": [
-        "describe_table",
-        "sql_exec",
-        "generate_demo_data"
-      ]
+      "autoApprove": ["describe_table", "sql_exec", "generate_demo_data"]
     }
   }
 }
+
+# command
+uv absolute path
+# cwd
+project absolute path
+# config_file
+dbconfig.json file path
 ```
 
 ### 3. Start the Server
@@ -224,6 +224,10 @@ python src/server.py
 uv run src/server.py
 ```
 
+#### Using fastmcp debug
+```bash
+fastmcp dev src/server.py
+```
 ### 4. Verify Installation
 
 ```bash

@@ -140,19 +140,22 @@ cd mcp_database_server/redis_mcp_server
 {
   "mcpServers": {
     "redis-mcp-client": {
-      "command": "uv",
-      "args": [
-        "run",
-        "src/server.py"
-      ],
-      "cwd": "/Volumes/store/redis_mcp_server", //项目绝对路径
+      "command": "/bin/uv",
+      "args": ["run", "src/server.py"],
+      "cwd": "/path/to/your/project",
       "env": {
-        "config_file": "/Volumes/store/dbconfig.json"
+        "config_file": "/path/to/your/dbconfig.json"
       },
       "disabled": false
     }
   }
 }
+# command
+uv项目绝对路径
+# cwd
+项目绝对路径
+# config_file
+dbconfig.json配置文件存放位置
 ```
 
 ## 🚀 快速开始
@@ -168,6 +171,9 @@ fastmcp run src/server.py
 
 # 直接使用Python执行
 python src/server.py
+
+# 使用 fastmcp调试
+fastmcp dev src/server.py
 ```
 
 ### 2. 基本使用示例

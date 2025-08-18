@@ -130,24 +130,24 @@ cd mcp_database_server/oceanbase_mcp_server
 {
   "mcpServers": {
     "mysql-mcp-client": {
-      "command": "uv",
-      "args": [
-        "run",
-        "src/server.py"
-      ],
-      "cwd": "/Volumes/store/mysql_mcp_server", //项目绝对路径
+      "command": "/bin/uv",
+      "args": ["run", "src/server.py"],
+      "cwd": "/path/to/your/project",
       "env": {
-        "config_file": "/Volumes/store/dbconfig.json"
+        "config_file": "/path/to/your/dbconfig.json"
       },
       "disabled": false,
-      "autoApprove": [
-        "describe_table",
-        "sql_exec",
-        "generate_demo_data"
-      ]
+      "autoApprove": ["describe_table", "sql_exec", "generate_demo_data"]
     }
   }
 }
+
+# command
+uv项目绝对路径
+# cwd
+项目绝对路径
+# config_file
+dbconfig.json配置文件存放位置
 ```
 
 ## 🚀 快速开始
@@ -155,13 +155,16 @@ cd mcp_database_server/oceanbase_mcp_server
 ### 启动 MCP 服务器
 ```bash
 # 使用已安装的包
-mysql-mcp-server
+mysql-mcp-server3
 
 # 使用 fastmcp CLI
 fastmcp run src/server.py
 
 # 或者直接使用 Python
 python src/server.py
+
+# 使用 fastmcp调试
+fastmcp dev src/server.py
 ```
 
 ### 与 MCP 客户端配合使用

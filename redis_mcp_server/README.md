@@ -122,19 +122,23 @@ cd mcp_database_server/redis_mcp_server
 {
   "mcpServers": {
     "redis-mcp-client": {
-      "command": "uv",
-      "args": [
-        "run",
-        "src/server.py"
-      ],
-      "cwd": "/Volumes/store/redis_mcp_server", //project absolute path
+      "command": "/bin/uv",
+      "args": ["run", "src/server.py"],
+      "cwd": "/path/to/your/project",
       "env": {
-        "config_file": "/Volumes/store/dbconfig.json"
+        "config_file": "/path/to/your/dbconfig.json"
       },
       "disabled": false
     }
   }
 }
+
+# command
+uv absolute path
+# cwd
+project absolute path
+# config_file
+dbconfig.json file path
 ```
 
 ## 🚀 Quick Start
@@ -150,6 +154,9 @@ fastmcp run src/server.py
 
 # Direct Python execution
 python src/server.py
+
+# Using fastmcp debug
+fastmcp dev src/server.py
 ```
 
 ### 2. Basic Usage Examples
