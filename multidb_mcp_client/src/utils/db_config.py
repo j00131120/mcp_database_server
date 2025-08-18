@@ -1,28 +1,18 @@
 """
-数据库配置模块
+Database Configuration Module
 
-使用单例模式处理数据库配置加载和管理。
+Uses singleton pattern to handle database configuration loading and management.
 """
 
 import json
 import os
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
-
-from src import project_path
-
-from .logger_util import logger
-
-
-db_config_name = "dbconfig.json"
-db_config_path = os.path.join(project_path, db_config_name)
-
-logger.info(f"当前数据库配置路径: {db_config_path}")
-
+from .logger_util import logger, db_config_path
 
 @dataclass
 class DatabaseInstance:
-    """数据库实例配置"""
+    """Database instance configuration"""
     db_instance_id: str
     db_host: str
     db_port: int
@@ -30,32 +20,31 @@ class DatabaseInstance:
     db_username: str
     db_password: str
     db_type: str
+    db_version: str
     db_active: bool
 
 
 @dataclass
 class DatabaseInstanceConfig:
-    """数据库配置，包含连接池设置和数据库实例列表"""
-    db_pool_size = 0
-    db_max_overflow = 0
-    db_pool_timeout = 0
+    """Database configuration, includes connection pool settings and database instance list"""
     db_instances_list: List[DatabaseInstance]
     log_path: str
+    log_level: str
     multidb_server: str
 
 
 class DatabaseInstanceConfigLoader:
-    """数据库配置加载器，从JSON文件加载配置 - 单例模式"""
+    """Database configuration loader, loads configuration from JSON file - Singleton pattern"""
 
     _instance = None
     _initialized = False
 
     def __new__(cls):
         """
-        单例模式实现
+        Singleton pattern implementation
 
         Returns:
-            DatabaseInstanceConfigLoader: 单例实例
+            DatabaseInstanceConfigLoader: Singleton instance
         """
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -63,49 +52,50 @@ class DatabaseInstanceConfigLoader:
 
     def __init__(self):
         """
-        初始化配置加载器（仅在第一次创建实例时执行）
+        Initialize configuration loader (only executed when creating instance for the first time)
         """
         if not self._initialized:
             self.config_json_file = db_config_path
             self._config: Optional[DatabaseInstanceConfig] = None
             self._initialized = True
-            logger.info(f"数据库实例配置加载器已初始化，配置文件: {self.config_json_file}")
+            logger.debug(f"Database instance configuration loader initialized, configuration file: {self.config_json_file}")
 
+    @property
     def load_config(self) -> DatabaseInstanceConfig:
         """
-        从JSON文件加载数据库配置
+        Load database configuration from JSON file
 
         Returns:
-            DatabaseInstanceConfig: 加载的配置对象
+            DatabaseInstanceConfig: Loaded configuration object
 
         Raises:
-            FileNotFoundError: 配置文件不存在
-            json.JSONDecodeError: JSON格式无效
-            KeyError: 缺少必需的配置键
+            FileNotFoundError: Configuration file not found
+            json.JSONDecodeError: Invalid JSON format
+            KeyError: Missing required configuration keys
         """
         if not os.path.exists(self.config_json_file):
-            error_msg = f"配置文件未找到: {self.config_json_file}"
+            error_msg = f"Configuration file not found: {self.config_json_file}"
             logger.error(error_msg)
             raise FileNotFoundError(error_msg)
 
         try:
             with open(self.config_json_file, 'r', encoding='utf-8') as f:
                 config_data = json.load(f)
-            logger.info(f"成功读取配置文件: {self.config_json_file}")
+            logger.debug(f"Successfully read configuration file: {self.config_json_file}")
         except json.JSONDecodeError as e:
-            error_msg = f"配置文件JSON格式错误: {e}"
+            error_msg = f"Configuration file JSON format error: {e}"
             logger.error(error_msg)
             raise json.JSONDecodeError(error_msg, e.doc, e.pos)
 
-        # 验证必需的键
+        # Validate required keys
         required_keys = ['dbList']
         for key in required_keys:
             if key not in config_data:
-                error_msg = f"缺少必需的配置键: {key}"
+                error_msg = f"Missing required configuration key: {key}"
                 logger.error(error_msg)
                 raise KeyError(error_msg)
 
-        # 解析数据库实例
+        # Parse database instances
         db_instances = []
         for db_data in config_data['dbList']:
             required_db_keys = [
@@ -114,7 +104,7 @@ class DatabaseInstanceConfigLoader:
             ]
             for key in required_db_keys:
                 if key not in db_data:
-                    error_msg = f"缺少必需的数据库配置键: {key}"
+                    error_msg = f"Missing required database configuration key: {key}"
                     logger.error(error_msg)
                     raise KeyError(error_msg)
 
@@ -126,88 +116,71 @@ class DatabaseInstanceConfigLoader:
                 db_username=db_data['dbUsername'],
                 db_password=db_data['dbPassword'],
                 db_type=db_data['dbType'],
+                db_version=db_data['dbVersion'],
                 db_active=db_data['dbActive']
             )
             db_instances.append(db_instance)
-            logger.info(f"解析数据库实例: {db_instance.db_instance_id} ({db_instance.db_host}:{db_instance.db_port})")
+            logger.debug(f"Parsed database instance: {db_instance.db_instance_id} ({db_instance.db_host}:{db_instance.db_port})")
 
-        # 创建配置对象
+        # Create configuration object
         self._config = DatabaseInstanceConfig(
             db_instances_list=db_instances,
+            log_path=config_data['logPath'],
+            log_level=config_data['logLevel'],
             multidb_server=config_data['multiDBServer'],
-            log_path=config_data['logPath']
         )
 
-        logger.info(f"配置加载完成，共 {len(db_instances)} 个数据库实例")
+        logger.debug(f"Configuration loading completed, total {len(db_instances)} database instances")
         return self._config
 
     def get_config(self) -> DatabaseInstanceConfig:
         """
-        获取加载的配置，如果未加载则自动加载
+        Get loaded configuration, automatically load if not loaded
 
         Returns:
-            DatabaseInstanceConfig: 配置对象
+            DatabaseInstanceConfig: Configuration object
         """
         if self._config is None:
-            return self.load_config()
+            return self.load_config
         return self._config
 
     def get_active_database(self) -> Optional[DatabaseInstance]:
         """
-        获取第一个活跃的数据库实例
+        Get the first active database instance
 
         Returns:
-            Optional[DatabaseInstance]: 第一个活跃的数据库实例，如果没有活跃实例则返回None
+            Optional[DatabaseInstance]: First active database instance, returns None if no active instance found
         """
         config = self.get_config()
         for db in config.db_instances_list:
             if db.db_active:
-                logger.info(f"找到第一个活跃数据库: {db.db_instance_id}")
+                logger.debug(f"Found first active database: {db}")
                 return db
-        logger.warning("没有找到活跃的数据库实例")
+        logger.warning("No active database instance found")
         return None
 
 
 def load_db_config() -> DatabaseInstanceConfig:
     """
-    加载数据库配置的便利函数
+    Convenience function to load database configuration
 
     Returns:
-        DatabaseInstanceConfig: 加载的配置对象
+        DatabaseInstanceConfig: Loaded configuration object
     """
     loader = DatabaseInstanceConfigLoader()
-    return loader.load_config()
+    return loader.load_config
 
 
 def load_activate_db_config() -> tuple[DatabaseInstance, DatabaseInstanceConfig]:
     """
-    加载数据库配置和活跃的数据库实例的便利函数
+    Convenience function to load database configuration and active database instance
 
     Returns:
-        tuple[DatabaseInstance, DatabaseInstanceConfig]: 活跃的数据库实例和配置对象的元组
+        tuple[DatabaseInstance, DatabaseInstanceConfig]: Tuple of active database instance and configuration object
     """
     loader = DatabaseInstanceConfigLoader()
     config = loader.get_config()
     active_database = loader.get_active_database()
     if active_database is None:
-        raise ValueError("没有找到活跃的数据库实例")
+        raise ValueError("No active database instance found")
     return active_database, config
-
-# 示例用法
-# if __name__ == "__main__":
-#     # 加载配置
-#     active_db, db_config = load_activate_db_config()
-#     logger.info(f"数据库连接池大小: {db_config.db_pool_size}")
-#     logger.info(f"数据库最大溢出连接数: {db_config.db_max_overflow}")
-#     logger.info(f"数据库连接池超时时间: {db_config.db_pool_timeout}")
-#     logger.info(f"数据库最大溢出连接数: {db_config.db_max_overflow}")
-#     logger.info(f"数据库连接池超时时间: {db_config.db_pool_timeout}")
-#     logger.info(f"多数据库服务器: {db_config.multidb_server}")
-#     logger.info(f"日志路径: {db_config.log_path}")
-#     logger.info(f"数据库实例数量: {len(db_config.db_instances_list)}")
-#     # 显示活跃数据库信息
-#     logger.info(f"\n活跃数据库: {active_db.db_instance_id}")
-#     logger.info(f"  主机: {active_db.db_host}:{db_config.db_port}")
-#     logger.info(f"  数据库: {active_db.db_database}")
-#     logger.info(f"  用户名: {active_db.db_username}")
-#     logger.info(f"  数据库类型: {active_db.db_type}")

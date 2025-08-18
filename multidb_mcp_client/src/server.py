@@ -1,361 +1,263 @@
-
 """
-MCP SQL服务器
+MCP SQL Server
 
-多数据源MCP服务器的主入口点。
+Main entry point for MySQL/MariaDB/TiDB/AWS OceanBase/RDS/Aurora MySQL DataSource MCP Client server.
 """
-
-import asyncio
 import os
 import sys
+from typing import List
+from fastmcp import FastMCP
 
-# 将当前目录添加到Python的模块搜索路径中
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.resources.db_resources import generate_database_config, generate_database_tables
 
-from mcp.server.fastmcp.server import FastMCP
+project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Add current directory to Python module search path
+sys.path.insert(0, project_path)
+from src.utils.logger_util import logger, db_config_path
+from src.utils.db_operate import execute_sql
+from src.utils import load_activate_db_config
+from src.tools.db_tool import generate_test_data
 
-from src.utils import execute_sql, logger
+# Create global MCP server instance
+mcp = FastMCP("DataSource MCP Client Server")
 
-# 创建全局MCP服务器实例
-logger.info("正在启动Multi DataSource MCP Client服务器...")
-
-mcp = FastMCP("Multi DataSource MCP Client服务器")
 
 @mcp.tool()
 async def sql_exec(sql: str):
     """
-    执行任意SQL语句（SELECT/INSERT/UPDATE/DELETE）
-    
-    这是一个通用的SQL执行工具，支持所有类型的SQL语句。它会通过HTTP代理
-    将SQL语句发送到配置的数据库服务器执行，并返回结果。
-    
-    支持的SQL语句类型：
-    - SELECT: 查询数据，返回结果集
-    - INSERT: 插入数据，返回影响的行数
-    - UPDATE: 更新数据，返回影响的行数
-    - DELETE: 删除数据，返回影响的行数
-    - DDL语句: CREATE, ALTER, DROP等
-    
-    Args:
-        sql (str): 要执行的SQL语句。请确保SQL语句语法正确，
-                  并且符合目标数据库的SQL方言要求。
-        
-    Returns:
-        dict: 包含执行结果的字典，格式为:
-            - success (bool): 执行是否成功
-            - result (any): 查询结果或影响的行数
-                - 对于SELECT语句：返回包含查询结果的列表
-                - 对于INSERT/UPDATE/DELETE：返回影响的行数
-            - message (str): 执行状态消息
-            - error (str, optional): 错误信息（仅在失败时返回）
-            
-    Example:
-        >>> await sql_exec("SELECT * FROM users LIMIT 5;")
-        {
-            "success": True,
-            "result": [["1", "张三", "zhang@example.com"], ...],
-            "message": "SQL执行成功"
-        }
-        
-        >>> await sql_exec("UPDATE users SET name='李四' WHERE id=1;")
-        {
-            "success": True,
-            "result": 1,
-            "message": "SQL执行成功"
-        }
-    
-    Raises:
-        通过返回字典中的error字段返回错误信息，不会抛出异常。
-        可能的错误包括：
-        - 数据库连接失败
-        - SQL语法错误
-        - 权限不足
-        - 表或字段不存在
+    Universal SQL execution tool
+
+    Function description:
+    Execute any type of SQL statement, including SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, etc.
+    Supports query and modification operations, automatically handles transaction commit and rollback
+
+    Parameter description:
+    - sql (str): SQL statement to execute, supports parameterized queries
+
+    Return value:
+    - dict: Dictionary containing execution results
+        - success (bool): Whether execution was successful
+        - result: Execution result (query returns data list, modification returns affected rows)
+        - message (str): Execution status description
+        - error (str): Error message on failure (only exists when success=False)
+
+    Usage examples:
+    - Query: SELECT * FROM users WHERE age > 18
+    - Insert: INSERT INTO users (name, age) VALUES ('John', 25)
+    - Update: UPDATE users SET age = 26 WHERE name = 'John'
+    - Delete: DELETE FROM users WHERE age < 18
     """
-    logger.info(f"MCP工具执行SQL: {sql}")
+    logger.info(f"MCP tool executing SQL: {sql}")
     try:
         result = await execute_sql(sql)
-        
-        # 记录执行结果
+
+        # Record execution results
         if isinstance(result, list):
-            logger.info(f"SQL执行成功，返回 {len(result)} 行数据")
+            logger.info(f"SQL execution successful, returned {len(result)} rows of data")
         else:
-            logger.info(f"SQL执行成功，影响 {result} 行")
-            
+            logger.info(f"SQL execution successful, affected {result} rows")
+
         return {
-            "success": True, 
+            "success": True,
             "result": result,
-            "message": "SQL执行成功"
+            "message": "SQL executed successfully"
         }
     except Exception as e:
         error_msg = str(e)
-        logger.error(f"MCP工具SQL执行失败: {error_msg}")
+        logger.error(f"MCP tool SQL execution failed: {error_msg}")
         return {
-            "success": False, 
+            "success": False,
             "error": error_msg,
-            "message": "SQL执行失败"
+            "message": "SQL execution failed"
         }
+
 
 @mcp.tool()
 async def describe_table(table_name: str):
     """
-    描述指定表的结构
-    
-    这个工具函数会显示指定表的详细结构信息，包括字段名、数据类型、
-    是否允许NULL、键信息、默认值等。内部执行 "DESCRIBE table_name;" SQL语句。
-    
-    功能特点：
-    - 显示表的完整结构信息
-    - 包含字段的数据类型和约束
-    - 显示主键、外键等索引信息
-    - 支持不同数据库类型的表结构查询
-    
-    Args:
-        table_name (str): 要查询的表名。请确保表名存在且有访问权限。
-                         表名区分大小写（取决于数据库配置）。
-        
-    Returns:
-        dict: 包含表结构信息的字典，格式为:
-            - success (bool): 执行是否成功
-            - result (list): 表结构信息列表，每行包含：
-                - Field: 字段名
-                - Type: 数据类型
-                - Null: 是否允许NULL (YES/NO)
-                - Key: 键类型 (PRI/UNI/MUL等)
-                - Default: 默认值
-                - Extra: 额外信息 (auto_increment等)
-            - message (str): 执行状态消息
-            - error (str, optional): 错误信息（仅在失败时返回）
-            
-    Example:
-        >>> await describe_table("users")
-        {
-            "success": True,
-            "result": [
-                ["id", "int(11)", "NO", "PRI", null, "auto_increment"],
-                ["name", "varchar(100)", "NO", "", null, ""],
-                ["email", "varchar(255)", "YES", "UNI", null, ""]
-            ],
-            "message": "SQL执行成功"
-        }
-    
-    Raises:
-        可能的错误（通过返回字典的error字段）：
-        - 表不存在
-        - 没有访问权限
-        - 数据库连接失败
-        - 表名格式不正确
+    Table structure description tool
+
+    Function description:
+    Get detailed structure information of the specified table, including column names, data types, NULL allowance, default values, key types, etc.
+    Equivalent to executing DESCRIBE table_name or SHOW COLUMNS FROM table_name
+
+    Parameter description:
+    - table_name (str): Table name to describe, supports database.table format
+
+    Return value:
+    - dict: Same return format as sql_exec tool, result contains table structure information list
+
+    Usage examples:
+    - describe_table("users")
+    - describe_table("mydb.users")
+
+    Return data example:
+    [
+        {"Field": "id", "Type": "int(11)", "Null": "NO", "Key": "PRI", "Default": null, "Extra": "auto_increment"},
+        {"Field": "name", "Type": "varchar(100)", "Null": "NO", "Key": "", "Default": null, "Extra": ""}
+    ]
     """
-    logger.info(f"MCP工具：描述表结构 - {table_name}")
+    logger.info(f"MCP tool: Describe table structure - {table_name}")
     return await sql_exec(f"DESCRIBE {table_name};")
 
 
 @mcp.tool()
-async def database_status():
+async def generate_demo_data(table_name: str, columns_name: List[str], num: int):
     """
-    获取数据库状态信息
-    
-    这个工具函数会获取当前活跃数据库的详细状态信息，包括连接参数、
-    连接状态、表数量等。它是一个综合性的数据库健康检查工具。
-    
-    功能特点：
-    - 显示当前活跃数据库的配置信息
-    - 检查数据库连接状态
-    - 统计数据库中的表数量
-    - 提供数据库类型和版本信息
-    - 用于系统监控和故障排查
-    
-    检查项目：
-    - 数据库连接参数（主机、端口、数据库名）
-    - 数据库类型（MySQL、PostgreSQL等）
-    - 连接状态（已连接/连接错误）
-    - 表数量统计
-    - 数据库实例ID
-    
-    Returns:
-        dict: 包含数据库状态信息的字典，格式为:
-            - success (bool): 状态检查是否成功
-            - result (dict): 数据库状态详情，包含：
-                - database_id (str): 数据库实例ID
-                - host (str): 数据库主机地址
-                - port (int): 数据库端口号
-                - database (str): 数据库名称
-                - type (str): 数据库类型
-                - table_count (int): 表数量
-                - status (str): 连接状态 ("connected" 或 "connection_error")
-            - message (str): 状态检查消息
-            - error (str, optional): 错误信息（仅在失败时返回）
-            
-    Example:
-        >>> await database_status()
-        {
-            "success": True,
-            "result": {
-                "database_id": "mylocalmysql",
-                "host": "localhost",
-                "port": 3306,
-                "database": "mysql_db",
-                "type": "mysql",
-                "table_count": 15,
-                "status": "connected"
-            },
-            "message": "数据库状态获取成功"
-        }
-    
-    Use Cases:
-        - 系统健康检查
-        - 数据库连接诊断
-        - 监控数据库状态
-        - 故障排查和调试
-        - 获取数据库基本信息
-    
-    Note:
-        - 此函数会尝试执行SHOW TABLES来测试连接
-        - 如果数据库连接失败，status字段会显示"connection_error"
-        - table_count在连接失败时会显示为0
+    Test data generation tool
+
+    Function description:
+    Generate specified amount of test data for specified tables and columns
+    Automatically generates random strings as test data for development and testing environments
+
+    Parameter description:
+    - table_name (str): Table name to generate test data for
+    - columns_name (List[str]): List of column names to fill with data
+    - num (int): Number of test records to generate
+
+    Return value:
+    - dict: Same return format as generate_test_data function
+        - success (bool): Whether data generation was successful
+        - result: Generation result information
+        - error (str): Error message on failure (only exists when success=False)
+
+    Data generation rules:
+    - Each record generates 8-character random letter strings for each column
+    - Uses INSERT statements for batch data insertion
+    - Supports any number of columns and data types (string type)
+
+    Usage examples:
+    - generate_demo_data("users", ["name", "email", "phone"], 100)
+    - generate_demo_data("products", ["product_name", "category"], 50)
+
+    Notes:
+    - Only suitable for development and testing environments
+    - Generated data consists of random strings, no business logic included
+    - Large data generation may take considerable time
     """
-    logger.info("MCP工具：获取数据库状态")
-    try:
-        from src.utils import load_activate_db_config
-        
-        # 获取活跃数据库配置
-        active_db, config = load_activate_db_config()
-        
-        # 尝试获取表数量
-        tables_result = await sql_exec("SHOW TABLES;")
-        table_count = len(tables_result.get("result", [])) if tables_result.get("success") else 0
-        
-        return {
-            "success": True,
-            "result": {
-                "database_id": active_db.db_instance_id,
-                "host": active_db.db_host,
-                "port": active_db.db_port,
-                "database": active_db.db_database,
-                "type": active_db.db_type,
-                "table_count": table_count,
-                "status": "connected" if tables_result.get("success") else "connection_error"
-            },
-            "message": "数据库状态获取成功"
-        }
-    except Exception as e:
-        error_msg = str(e)
-        logger.error(f"获取数据库状态失败: {error_msg}")
-        return {
-            "success": False,
-            "error": error_msg,
-            "message": "数据库状态获取失败"
-        }
+    logger.info(f"MCP tool: Generate test data - {table_name}")
+    return await generate_test_data(table_name, columns_name, num)
 
 
-@mcp.tool()
-async def execute_query_with_limit(sql: str, limit: int = 100):
+@mcp.resource("database://tables")
+async def get_database_tables():
     """
-    执行查询语句并限制返回行数
-    
-    这是一个安全的查询工具，它会自动为SELECT语句添加LIMIT子句，
-    防止意外查询大量数据导致性能问题或内存溢出。
-    
-    功能特点：
-    - 自动添加LIMIT限制，防止大结果集
-    - 只允许SELECT查询，提高安全性
-    - 可配置返回行数限制
-    - 适用于数据探索和调试
-    
-    Args:
-        sql (str): 要执行的SELECT查询语句。必须是SELECT语句，
-                  不支持INSERT/UPDATE/DELETE等修改操作。
-        limit (int, optional): 最大返回行数，默认100行。
-                              范围：1-10000行。
-        
-    Returns:
-        dict: 包含查询结果的字典，格式为:
-            - success (bool): 查询是否成功
-            - result (list): 查询结果列表（最多limit行）
-            - limit_applied (int): 实际应用的行数限制
-            - message (str): 查询状态消息
-            - error (str, optional): 错误信息（仅在失败时返回）
-            
-    Example:
-        >>> await execute_query_with_limit("SELECT * FROM users", 10)
-        {
-            "success": True,
-            "result": [["1", "张三", "zhang@example.com"], ...],
-            "limit_applied": 10,
-            "message": "查询执行成功"
-        }
-    
-    Security:
-        - 只允许SELECT语句
-        - 自动限制返回行数
-        - 防止SQL注入（通过参数验证）
-        - 不允许执行修改操作
-    
-    Limitations:
-        - 不支持非SELECT语句
-        - 最大限制10000行
-        - 不支持存储过程调用
+    Database table information resource
+
+    Function description:
+    Provides metadata information for all tables in the database, including table names, table structures, record counts, etc.
+    This is a read-only resource for obtaining database schema information, not involving data modification operations
+
+    Resource URI:
+    - database://tables - Represents database table collection resource
+
+    Return value format:
+    - uri (str): Resource identifier "database://tables"
+    - mimeType (str): Content type "application/json"
+    - text (str): JSON-formatted table information string
+
+    Return data content:
+    Contains detailed information list for all tables, each table includes:
+    - name: Table name
+    - columns: Table structure information (column names, data types, constraints, etc.)
+    - record_count: Number of records in the table
+
+    Usage scenarios:
+    - Database schema analysis
+    - Table structure viewing
+    - Data volume statistics
+    - Database monitoring
+
+    Notes:
+    - This is a read-only resource that will not modify database content
+    - Returned information is based on current active database connection
+    - Databases with many tables may require longer response time
     """
-    logger.info(f"MCP工具：执行限制查询 - SQL: {sql}, LIMIT: {limit}")
-    
-    # 验证SQL语句类型
-    sql_trimmed = sql.strip().upper()
-    if not sql_trimmed.startswith('SELECT'):
-        return {
-            "success": False,
-            "error": "只允许执行SELECT查询语句",
-            "message": "查询类型不支持"
-        }
-    
-    # 验证limit参数
-    if not isinstance(limit, int) or limit < 1 or limit > 10000:
-        return {
-            "success": False,
-            "error": "limit参数必须是1-10000之间的整数",
-            "message": "参数验证失败"
-        }
-    
-    try:
-        # 检查SQL是否已经包含LIMIT
-        if 'LIMIT' not in sql_trimmed:
-            # 添加LIMIT子句
-            limited_sql = f"{sql.rstrip(';')} LIMIT {limit};"
-        else:
-            # 如果已有LIMIT，使用原SQL但记录警告
-            limited_sql = sql
-            logger.warning(f"SQL语句已包含LIMIT子句: {sql}")
-        
-        result = await sql_exec(limited_sql)
-        
-        if result.get("success"):
-            return {
-                "success": True,
-                "result": result["result"],
-                "limit_applied": limit,
-                "message": "查询执行成功"
-            }
-        else:
-            return result
-            
-    except Exception as e:
-        error_msg = str(e)
-        logger.error(f"限制查询执行失败: {error_msg}")
-        return {
-            "success": False,
-            "error": error_msg,
-            "message": "查询执行失败"
-        }
+    logger.info("Getting database table information")
+    # Get all table names
+    tables_info = await generate_database_tables()
 
-# ==================== 服务器启动相关 ====================
+    return {
+        "uri": "database://tables",
+        "mimeType": "application/json",
+        "text": str(tables_info)
+    }
 
-# 当使用 fastmcp run 时，不需要手动调用 mcp.run()
-# FastMCP CLI 会自动处理服务器启动
 
-# 当直接使用 Python 运行时，手动启动服务器
+@mcp.resource("database://config")
+async def get_database_config():
+    """
+    Database configuration information resource
+
+    Function description:
+    Provides configuration information for current database connection, including connection parameters, connection pool settings, etc.
+    Sensitive information (such as passwords) will be hidden to ensure configuration information security
+
+    Resource URI:
+    - database://config - Represents database configuration resource
+
+    Return value format:
+    - uri (str): Resource identifier "database://config"
+    - mimeType (str): Content type "application/json"
+    - text (str): JSON-formatted configuration information string
+
+    Return data content:
+    Contains configuration information for database instances and connection pools:
+    - dbInstanceId: Database instance identifier
+    - dbHost: Database host address
+    - dbPort: Database port number
+    - dbDatabase: Database name
+    - dbUsername: Database username
+    - dbPassword: "***hidden***" (password is hidden)
+    - dbType: Database type (xesql/mysql/ubisql)
+    - dbVersion: Database version
+    - pool_size: Connection pool size
+    - max_overflow: Maximum overflow connections
+    - pool_timeout: Connection pool timeout
+
+    Usage scenarios:
+    - Database connection status check
+    - Connection pool configuration viewing
+    - Database type and version information retrieval
+    - System monitoring and diagnostics
+
+    Security features:
+    - Database passwords are hidden from display
+    - Only returns configuration for current active database
+    - Does not expose sensitive information from other database instances
+
+    Notes:
+    - This is a read-only resource that will not modify database configuration
+    - Configuration information is based on dbconfig.json file
+    - Environment variable config_file will override default configuration file path
+    """
+    logger.info("Getting database configuration information")
+
+    safe_config = await generate_database_config()
+
+    return {
+        "uri": "database://config",
+        "mimeType": "application/json",
+        "text": str(safe_config)
+    }
+
+
+# ==================== Server Startup Related ====================
+
+# When using fastmcp run, FastMCP CLI automatically handles server startup
+# No need to manually call mcp.run() or handle stdio
+
 def main():
-    """主函数：启动MCP服务器"""
-    logger.info("Multi DataSource MCP Client服务器已准备好接受连接")
+    """Main function: Start MCP server"""
+    logger.info(f"Database configuration file path:{db_config_path}")
+    logger.info(f"Current project path:{project_path}")
+    logger.info("Xesql/Mysql/Ubisql DataSource MCP Client client is ready to accept connections")
+
+    active_db, db_config = load_activate_db_config()
+    logger.info(f"Current database instance configuration: {active_db}")
+    # When using fastmcp run, just call mcp.run() directly
     mcp.run(transport='stdio')
+
 
 if __name__ == "__main__":
     main()
