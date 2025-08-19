@@ -97,7 +97,7 @@ Add to your MCP client configuration file:
 ```json
 {
   "mcpServers": {
-    "oceanbase-mcp-client": {
+    "redis-mcp-client": {
       "command": "redis-mcp-server3",
       "env": {
         "config_file": "/path/to/your/dbconfig.json"
