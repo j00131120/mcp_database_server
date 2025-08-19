@@ -1,6 +1,6 @@
 
 """
-MCP SQL Server
+MCP PostgreSQL Server
 
 Main entry point for PostgreSQL DataSource MCP Client server.
 """
@@ -23,7 +23,7 @@ mcp = FastMCP("DataSource MCP Client Server")
 @mcp.tool()
 async def sql_exec(sql: str):
     """
-    Universal SQL execution tool
+    PostgreSQL SQL execution tool
     
     Function description:
     Execute any type of SQL statement, including SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, etc.
@@ -72,7 +72,7 @@ async def sql_exec(sql: str):
 @mcp.tool()
 async def describe_table(table_name: str):
     """
-    Table structure description tool
+    PostgreSQL Table structure description tool
     
     Function description:
     Get detailed structure information of the specified table, including column names, data types, NULL allowance, default values, key types, etc.
@@ -129,7 +129,7 @@ async def describe_table(table_name: str):
 @mcp.tool()
 async def generate_demo_data(table_name: str, columns_name: List[str], num: int):
     """
-    Test data generation tool
+    PostgreSQL Test data generation tool
     
     Function description:
     Generate specified amount of test data for specified tables and columns
@@ -165,7 +165,7 @@ async def generate_demo_data(table_name: str, columns_name: List[str], num: int)
 @mcp.resource("database://tables")
 async def get_database_tables():
     """
-    Database table information resource
+    PostgreSQL Database table information resource
     
     Function description:
     Provides metadata information for all tables in the database, including table names, table structures, record counts, etc.
@@ -210,7 +210,7 @@ async def get_database_tables():
 @mcp.resource("database://config")
 async def get_database_config():
     """
-    Database configuration information resource
+    PostgreSQL Database configuration information resource
     
     Function description:
     Provides configuration information for current database connection, including connection parameters, connection pool settings, etc.
