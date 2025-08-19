@@ -297,6 +297,147 @@ async def get_redis_overview():
         logger.error(f"Failed to get Redis overview information: {e}")
         return {"success": False, "error": str(e)}
 
+
+@mcp.tool()
+async def delete_key(key: str):
+    """
+    Delete a single Redis key
+    
+    Args:
+        key: Redis key name to delete
+        
+    Examples:
+        delete_key('user:1001')
+        delete_key('session:abc123')
+        
+    Returns:
+        dict: Dictionary containing execution results
+    """
+    logger.info(f"Deleting Redis key: {key}")
+    
+    try:
+        result = await execute_command("DEL", key)
+        if result == 1:
+            logger.info(f"Successfully deleted key: {key}")
+            return {"success": True, "deleted": True, "key": key, "message": f"Key '{key}' deleted successfully"}
+        else:
+            logger.warning(f"Key not found or already deleted: {key}")
+            return {"success": True, "deleted": False, "key": key, "message": f"Key '{key}' not found or already deleted"}
+    except Exception as e:
+        logger.error(f"Failed to delete key '{key}': {e}")
+        return {"success": False, "error": str(e), "key": key}
+
+
+@mcp.tool()
+async def delete_keys(keys: list):
+    """
+    Delete multiple Redis keys in batch
+    
+    Args:
+        keys: List of Redis key names to delete
+        
+    Examples:
+        delete_keys(['user:1001', 'user:1002', 'user:1003'])
+        delete_keys(['session:abc123', 'cache:temp', 'lock:process'])
+        
+    Returns:
+        dict: Dictionary containing batch execution results
+    """
+    if not keys:
+        return {"success": False, "error": "Keys list cannot be empty"}
+    
+    logger.info(f"Deleting {len(keys)} Redis keys: {keys}")
+    
+    try:
+        # Use Redis DEL command which accepts multiple keys
+        result = await execute_command("DEL", *keys)
+        deleted_count = result
+        not_found_count = len(keys) - deleted_count
+        
+        logger.info(f"Batch delete completed: {deleted_count} deleted, {not_found_count} not found")
+        
+        return {
+            "success": True, 
+            "total_keys": len(keys),
+            "deleted_count": deleted_count,
+            "not_found_count": not_found_count,
+            "keys": keys,
+            "message": f"Deleted {deleted_count} out of {len(keys)} keys"
+        }
+    except Exception as e:
+        logger.error(f"Failed to delete keys {keys}: {e}")
+        return {"success": False, "error": str(e), "keys": keys}
+
+
+@mcp.tool()
+async def delete_keys_by_pattern(pattern: str, limit: int = 500):
+    """
+    Delete Redis keys matching a pattern (use with caution)
+    
+    Args:
+        pattern: Redis key pattern (e.g., 'user:*', 'cache:*', 'session:*')
+        limit: Maximum number of keys to delete (default 100, safety limit)
+        
+    Examples:
+        delete_keys_by_pattern('temp:*', 50)
+        delete_keys_by_pattern('session:expired:*', 200)
+        
+    Returns:
+        dict: Dictionary containing pattern deletion results
+        
+    Warning:
+        This function uses KEYS command which can be slow on large databases.
+        Use with caution in production environments.
+    """
+    if not pattern:
+        return {"success": False, "error": "Pattern cannot be empty"}
+    
+    if limit <= 0 or limit > 1000:
+        return {"success": False, "error": "Limit must be between 1 and 1000"}
+    
+    logger.info(f"Deleting Redis keys matching pattern: {pattern} (limit: {limit})")
+    
+    try:
+        # First, find keys matching the pattern
+        matching_keys = await execute_command("KEYS", pattern)
+        
+        if not matching_keys:
+            logger.info(f"No keys found matching pattern: {pattern}")
+            return {
+                "success": True,
+                "pattern": pattern,
+                "found_count": 0,
+                "deleted_count": 0,
+                "message": f"No keys found matching pattern '{pattern}'"
+            }
+        
+        # Apply limit
+        keys_to_delete = matching_keys[:limit]
+        truncated = len(matching_keys) > limit
+        
+        if truncated:
+            logger.warning(f"Found {len(matching_keys)} keys, but limited to {limit} keys for safety")
+        
+        # Delete the keys
+        deleted_count = await execute_command("DEL", *keys_to_delete)
+        
+        logger.info(f"Pattern delete completed: {deleted_count} keys deleted for pattern '{pattern}'")
+        
+        return {
+            "success": True,
+            "pattern": pattern,
+            "found_count": len(matching_keys),
+            "deleted_count": deleted_count,
+            "truncated": truncated,
+            "limit_applied": limit,
+            "deleted_keys": keys_to_delete,
+            "message": f"Deleted {deleted_count} keys matching pattern '{pattern}'"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to delete keys by pattern '{pattern}': {e}")
+        return {"success": False, "error": str(e), "pattern": pattern}
+
 # ==================== Server Startup Related ====================
 
 # When using fastmcp run, FastMCP CLI automatically handles server startup
