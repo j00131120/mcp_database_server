@@ -126,9 +126,6 @@ class DatabaseInstanceConfigLoader:
 
         # Create configuration object
         self._config = DatabaseInstanceConfig(
-            db_pool_size=config_data['dbPoolSize'],
-            db_max_overflow=config_data['dbMaxOverflow'],
-            db_pool_timeout=config_data['dbPoolTimeout'],
             db_instances_list=db_instances,
             log_path=config_data['logPath'],
             log_level=config_data['logLevel']

@@ -8,7 +8,7 @@ Supports both MySQL and Oracle compatibility modes with high-performance async o
 from typing import TYPE_CHECKING
 
 # Package metadata
-__version__ = "1.0.0"
+__version__ = "1.0.2"
 __author__ = "Frank Jin"
 __email__ = "j00131120@163.com"
 __description__ = "A Model Context Protocol (MCP) server that enables secure interaction with OceanBase databases. Supports both MySQL and Oracle compatibility modes with high-performance async operations."
