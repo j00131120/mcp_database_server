@@ -44,7 +44,7 @@ async def execute_sql(sql: str, params: Optional[Dict] = None) -> Any:
     try:
         response = await http_post(url, data=data)
         logger.info(f"Remote SQL executed successfully, result: {response}")
-        return response.get("result", [])
+        return response.get("data", [])
     except Exception as e:
         logger.error(f"Remote SQL execution failed: {e}")
         raise

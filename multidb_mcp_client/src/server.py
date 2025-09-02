@@ -243,7 +243,7 @@ def main():
     logger.info(f"Current project path:{project_path}")
     logger.info("Xesql/Mysql/Ubisql DataSource MCP Client client is ready to accept connections")
 
-    active_db, _ = load_activate_db_config()
+    active_db, db_config = load_activate_db_config()
     logger.info(f"Current database instance configuration: {active_db}")
     # When using fastmcp run, just call mcp.run() directly
     mcp.run(transport='stdio')

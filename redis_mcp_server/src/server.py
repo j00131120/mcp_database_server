@@ -449,7 +449,7 @@ def main():
     logger.info(f"Current project path:{project_path}")
     logger.info("Redis DataSource MCP Client server is ready to accept connections")
 
-    active_db, _ = load_activate_redis_config()
+    active_db, db_config = load_activate_redis_config()
     logger.info(f"Current database instance configuration: {active_db}")
     # When using fastmcp run, just call mcp.run() directly
     mcp.run(transport='stdio')
