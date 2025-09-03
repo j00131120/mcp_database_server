@@ -239,10 +239,10 @@ async def get_database_config():
 
 def main():
     """Main function: Start MCP server"""
-    logger.info(f"MCP Client version: {get_base_package_info()}")
+    logger.info(f"Multi DataSource MCP Client version: {get_base_package_info()}")
     logger.info(f"Database configuration file path:{db_config_path}")
     logger.info(f"Current project path:{project_path}")
-    logger.info("Xesql/Mysql/Ubisql DataSource MCP Client client is ready to accept connections")
+    logger.info("Xesql/Mysql/Ubisql/Oracle Multi DataSource MCP Client is ready to accept connections")
 
     active_db, db_config = load_activate_db_config()
     logger.info(f"Current database instance configuration: {active_db}")
