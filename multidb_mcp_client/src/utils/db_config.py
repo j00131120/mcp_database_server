@@ -75,7 +75,7 @@ class DatabaseInstanceConfigLoader:
         """
         if not os.path.exists(self.config_json_file):
             error_msg = f"Configuration file not found: {self.config_json_file}"
-            logger.error(error_msg)
+            logger.error(f"dbconfig.json is not found, config_file of env should be set to the correct path.")
             raise FileNotFoundError(error_msg)
 
         try:

@@ -44,12 +44,16 @@ def normalize_log_path(log_path: str) -> str:
     Returns:
         str: Normalized log path with appropriate log directory suffix
     """
-    if not log_path:
-        return log_path
+    if not os.path.exists(log_path):
+        logger.error(f"log_path does not exist: {log_path}")
+        log_path = project_path
 
-    # Optimized one-liner: Check if path ends with log/logs (with or without trailing slash)
-    return log_path if log_path.rstrip(os.sep).endswith(('logs', 'log')) else os.path.join(log_path, "logs")
+        # Optimized one-liner: Check if path ends with log/logs (with or without trailing slash)
+    if not log_path.rstrip(os.sep).endswith(('logs', 'log')):
+        log_path = os.path.join(log_path, "logs")
 
+    logger.debug(f"log_path : {log_path}")
+    return log_path
 
 def get_log_config() -> tuple[str, str]:
     """Get log path and log level from configuration file

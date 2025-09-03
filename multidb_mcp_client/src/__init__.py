@@ -6,7 +6,8 @@ A Model Context Protocol (MCP) server for MySQL/MariaDB/TiDB/OceanBase databases
 
 from typing import TYPE_CHECKING
 # Package metadata
-__version__ = "0.1.2"
+__projectname__ = "mysql-mcp-server3"
+__version__ = "0.1.5"
 __author__ = "Frank Jin"
 __email__ = "j00131120@163.com"
 __description__ = "A Model Context Protocol (MCP) server that enables secure interaction with MySQL/MariaDB/TiDB/AWS OceanBase/RDS/Aurora MySQL DataBases."
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 # Public API
 __all__ = [
     # Package metadata
+    "__projectname__",
     "__version__",
     "__author__",
     "__email__",
@@ -51,11 +53,19 @@ def get_version() -> str:
 def get_package_info() -> dict[str, str]:
     """Get comprehensive package information."""
     return {
-        "name": "mysql-mcp-server3",
+        "projectname": __projectname__,
         "version": __version__,
         "author": __author__,
         "email": __email__,
         "description": __description__,
         "license": __license__,
         "url": __url__,
+    }
+def get_base_package_info() -> dict[str, str]:
+    """Get comprehensive package information."""
+    return {
+        "projectname": __projectname__,
+        "version": __version__,
+        "description": __description__,
+        "license": __license__,
     }

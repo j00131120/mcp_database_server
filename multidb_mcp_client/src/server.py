@@ -7,8 +7,7 @@ import os
 import sys
 from typing import List
 from fastmcp import FastMCP
-
-from src.resources.db_resources import generate_database_config, generate_database_tables
+from src import get_base_package_info
 
 project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # Add current directory to Python module search path
@@ -17,6 +16,7 @@ from src.utils.logger_util import logger, db_config_path
 from src.utils.db_operate import execute_sql
 from src.utils import load_activate_db_config
 from src.tools.db_tool import generate_test_data
+from src.resources.db_resources import generate_database_config, generate_database_tables
 
 # Create global MCP server instance
 mcp = FastMCP("DataSource MCP Client Server")
@@ -239,6 +239,7 @@ async def get_database_config():
 
 def main():
     """Main function: Start MCP server"""
+    logger.info(f"MCP Client version: {get_base_package_info()}")
     logger.info(f"Database configuration file path:{db_config_path}")
     logger.info(f"Current project path:{project_path}")
     logger.info("Xesql/Mysql/Ubisql DataSource MCP Client client is ready to accept connections")
