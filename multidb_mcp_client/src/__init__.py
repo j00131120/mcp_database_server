@@ -7,7 +7,7 @@ A Model Context Protocol (MCP) server for MySQL/MariaDB/TiDB/OceanBase databases
 from typing import TYPE_CHECKING
 # Package metadata
 __projectname__ = "multidb-mcp-client"
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 __author__ = "Frank Jin"
 __email__ = "j00131120@163.com"
 __description__ = "A Model Context Protocol (MCP) server that enables secure interaction with MySQL/MariaDB/TiDB/AWS OceanBase/RDS/Aurora MySQL DataBases."

@@ -182,5 +182,6 @@ def load_activate_db_config() -> tuple[DatabaseInstance, DatabaseInstanceConfig]
     config = loader.get_config()
     active_database = loader.get_active_database()
     if active_database is None:
+        logger.error(f"No active database instance found. config: {config}")
         raise ValueError("No active database instance found")
     return active_database, config
